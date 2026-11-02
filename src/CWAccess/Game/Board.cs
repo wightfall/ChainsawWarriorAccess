@@ -292,11 +292,11 @@ namespace CWAccess.Game
                     }
                     else
                     {
-                        InfoPanel.Open(() => Loc.Get("panel_equipment"), EquipmentList());
+                        InfoPanel.Open(() => Loc.Get("panel_equipment"), EquipmentList(), help: "help_panel_equipment");
                     }
                     return true;
                 case KeyCode.L:
-                    InfoPanel.Open(() => Loc.Get("panel_log"), LogList(), startAtEnd: true);
+                    InfoPanel.Open(() => Loc.Get("panel_log"), LogList(), startAtEnd: true, help: "help_panel_log");
                     return true;
             }
             return false;
@@ -334,9 +334,9 @@ namespace CWAccess.Game
             return true;
         }
 
-        public override string KeyHelp()
+        public override List<string> HelpLines(IList<NavItem> items)
         {
-            return Loc.Get("help_board");
+            return KeyHelp.Lines("help_board");
         }
     }
 }

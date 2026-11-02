@@ -98,6 +98,7 @@ namespace CWAccess.Nav
                 };
                 if (checkbox != null && !opt.PlainButtons.Contains(go.name))
                 {
+                    item.IsSwitch = true;
                     item.Text = () => Loc.Role(checkbox.radioButtonRoot != null && !checkbox.optionCanBeNone && IsRadio(checkbox) ? "role_radio" : "role_checkbox",
                         LiveLabel(target, own), Loc.Get(checkbox.isChecked ? "state_on" : "state_off")) + Disabled(target);
                 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using CWAccess.Game;
 using CWAccess.Nav;
 using CWAccess.Patches;
@@ -19,6 +20,7 @@ namespace CWAccess.Screens
             options.SkipNames.Add("Button_ArrowLeft");
             options.SkipNames.Add("Button_ArrowRight");
             backButtons = new[] { "Button_Cancel" };
+            backHelp = "keys_back_cancel";
         }
 
         public override int InitialFocus(List<NavItem> items)
@@ -43,9 +45,22 @@ namespace CWAccess.Screens
             if (b != null) b.isEnabled = on;
         }
 
-        public override string KeyHelp()
+        /// <summary>F1 on a card picker (a weapon, an item, an enemy...): only what this one offers.</summary>
+        public override List<string> HelpLines(IList<NavItem> items)
         {
-            return Loc.Get("help_cards");
+            var lines = new List<string> { Loc.Get("keys_cards_move") };
+            if (items.Any(i => IsCard(i) && i.Activate != null)) lines.Add(Loc.Get("keys_choose_card"));
+            if (items.Any(i => IsCard(i) && i.Toggle != null)) lines.Add(Loc.Get("keys_select_card"));
+            if (items.Any(i => IsCard(i) && i.Details != null)) lines.Add(Loc.Get("keys_card_details"));
+            if (items.Any(i => i != null && i.Key != null && i.Key.StartsWith("tab"))) lines.Add(Loc.Get("keys_tab_enter"));
+            string back = BackHelp();
+            if (back != null) lines.Add(back);
+            return lines;
+        }
+
+        protected static bool IsCard(NavItem i)
+        {
+            return i != null && i.Key != null && i.Key.StartsWith("card");
         }
 
         /// <summary>Equipment kinds in the order of the game's tabs.</summary>
@@ -233,6 +248,22 @@ namespace CWAccess.Screens
             SetGlow<EquipmentCard>(root, c => c.mpStatsCard != null && selected.Contains(c.mpStatsCard.mpEquipment));
             Audio.CuePlayer.Play(selected.Contains(e) ? Audio.Cue.Select : Audio.Cue.Deselect);
             Speaker.Say(TextUtil.Join(Loc.Get(selected.Contains(e) ? "state_selected" : "state_not_selected"), G.LabelText(R.Get<UILabel>(screen, "mpTextPoints"))));
+        }
+
+        /// <summary>F1 in the equipment shop or at a dump.</summary>
+        public override List<string> HelpLines(IList<NavItem> items)
+        {
+            var lines = new List<string> { Loc.Get("keys_cards_move") };
+            if (items.Any(IsCard))
+            {
+                lines.Add(Loc.Get(R.Get<bool>(screen, "mbRequiresSelect") ? "keys_take_card" : "keys_buy_card"));
+                if (items.Any(i => IsCard(i) && i.Details != null)) lines.Add(Loc.Get("keys_card_details"));
+            }
+            if (!R.Get<bool>(screen, "mbLockToggle")) lines.Add(Loc.Get("keys_tabs"));
+            lines.Add(Loc.Get("keys_points"));
+            string back = BackHelp();
+            if (back != null) lines.Add(back);
+            return lines;
         }
 
         public override bool HandleKey(KeyCode key, bool shift, bool ctrl)

@@ -101,13 +101,17 @@ namespace CWAccess.Tests
 
         public void Dispose()
         {
-            try
+            // A program the test stopped, or a file Cecil read, can stay locked for a moment.
+            for (int i = 0; i < 30 && Directory.Exists(game); i++)
             {
-                Directory.Delete(game, true);
-            }
-            catch (IOException)
-            {
-                // A file still mapped by Cecil; the temp folder is cleaned by Windows.
+                try
+                {
+                    Directory.Delete(game, true);
+                }
+                catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
             }
         }
 
@@ -311,23 +315,21 @@ namespace CWAccess.Tests
     /// </summary>
     internal static class RunningCopy
     {
-        private static string program;
-
+        /// <summary>Builds the program into the given place (inside the test's own folder) and starts it.</summary>
         public static Process StartAt(string path)
         {
-            if (program == null)
+            string dir = Path.GetDirectoryName(path);
+            Directory.CreateDirectory(dir);
+            string exe = Path.Combine(dir, "wait-" + Guid.NewGuid().ToString("N") + ".exe");
+            using (var csc = new Microsoft.CSharp.CSharpCodeProvider())
             {
-                string exe = Path.Combine(TestPaths.NewTempDir(), "wait.exe");
-                using (var csc = new Microsoft.CSharp.CSharpCodeProvider())
-                {
-                    var options = new System.CodeDom.Compiler.CompilerParameters { GenerateExecutable = true, OutputAssembly = exe };
-                    var result = csc.CompileAssemblyFromSource(options, "class P { static void Main() { System.Threading.Thread.Sleep(120000); } }");
-                    Assert.False(result.Errors.HasErrors, result.Errors.Count > 0 ? result.Errors[0].ToString() : null);
-                }
-                program = exe;
+                var options = new System.CodeDom.Compiler.CompilerParameters { GenerateExecutable = true, OutputAssembly = exe };
+                var result = csc.CompileAssemblyFromSource(options, "class P { static void Main() { System.Threading.Thread.Sleep(120000); } }");
+                result.TempFiles.Delete();
+                Assert.False(result.Errors.HasErrors, result.Errors.Count > 0 ? result.Errors[0].ToString() : null);
             }
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.Copy(program, path, true);
+            if (File.Exists(path)) File.Delete(path);
+            File.Move(exe, path);
             return Process.Start(new ProcessStartInfo(path) { CreateNoWindow = true, UseShellExecute = false });
         }
 

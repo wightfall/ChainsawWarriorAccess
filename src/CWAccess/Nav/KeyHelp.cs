@@ -5,20 +5,69 @@ using CWAccess.Speech;
 
 namespace CWAccess.Nav
 {
-    /// <summary>F1: the keys of this screen (spoken and listed). Shift+F1: every key of the mod and every sound cue.</summary>
+    /// <summary>
+    /// F1 says the keys that work on the current screen, worked out from what is on it; nothing opens.
+    /// Shift+F1 lists every key of the mod and every sound cue.
+    /// </summary>
     internal static class KeyHelp
     {
-        public static void ShowScreen(ScreenContext ctx)
+        public static void SayScreen(ScreenContext ctx)
         {
-            if (ctx is InfoPanel) InfoPanel.Close();
-            ScreenContext screen = Navigator.Context;
-            string text = (screen != null ? screen.KeyHelp() : Loc.Get("help_menu")) + "\n" + Loc.Get("help_global");
-            List<NavItem> items = Lines(text, "help");
-            InfoPanel.Open(() => Loc.Get("panel_help"), items);
-            // Say the whole help at once; Up and Down still go line by line.
-            var all = new List<string>();
-            for (int i = 1; i < items.Count; i++) all.Add(items[i].Speak());
-            Speaker.Queue(TextUtil.Join(all));
+            Speaker.Say(ScreenText(ctx, Navigator.Items));
+        }
+
+        /// <summary>The F1 text: the keys of the screen, then where to find all of them.</summary>
+        internal static string ScreenText(ScreenContext ctx, IList<NavItem> items)
+        {
+            var lines = new List<string>();
+            if (ctx != null) lines.AddRange(ctx.HelpLines(items ?? new List<NavItem>()));
+            if (lines.Count == 0) lines.Add(Loc.Get("keys_nothing"));
+            if (ctx == null || !ctx.IsKeyList) lines.Add(Loc.Get("keys_more"));
+            return TextUtil.Join(lines);
+        }
+
+        /// <summary>The keys of a list of items: moving, pressing, switching, changing, details and letters.</summary>
+        internal static List<string> ForItems(IList<NavItem> items, bool letters)
+        {
+            var lines = new List<string>();
+            if (items == null) return lines;
+            bool press = false, switches = false, adjust = false, details = false;
+            foreach (NavItem i in items)
+            {
+                if (i == null) continue;
+                if (i.IsSwitch) switches = true;
+                else if (i.Activate != null) press = true;
+                if (i.Adjust != null) adjust = true;
+                if (i.Details != null) details = true;
+            }
+            if (items.Count > 1) lines.Add(Loc.Get("keys_move"));
+            if (press) lines.Add(Loc.Get("keys_press"));
+            if (switches) lines.Add(Loc.Get("keys_switch"));
+            if (adjust) lines.Add(Loc.Get("keys_adjust"));
+            if (details) lines.Add(Loc.Get("keys_details"));
+            if (letters && items.Count > 3) lines.Add(Loc.Get("keys_letters"));
+            return lines;
+        }
+
+        /// <summary>The keys of a list panel: its own help text, or the keys of its items and Escape to close.</summary>
+        internal static List<string> ForPanel(string help, IList<NavItem> items)
+        {
+            if (help != null) return Lines(help);
+            List<string> lines = ForItems(items, letters: false);
+            lines.Add(Loc.Get("keys_back_close"));
+            return lines;
+        }
+
+        /// <summary>The lines of a help text with "\n" between them.</summary>
+        internal static List<string> Lines(string key)
+        {
+            var lines = new List<string>();
+            foreach (string line in Loc.Get(key).Split('\n'))
+            {
+                string l = line.Trim();
+                if (l.Length > 0) lines.Add(l);
+            }
+            return lines;
         }
 
         public static void ShowAll(ScreenContext ctx)
@@ -28,7 +77,7 @@ namespace CWAccess.Nav
             foreach (string section in new[] { "global", "menu", "board", "cards", "panel", "settings" })
             {
                 items.Add(NavItem.Label("h_" + section, () => Loc.Get("keys_section_" + section)));
-                items.AddRange(Lines(Loc.Get("help_" + section), section));
+                items.AddRange(LineItems(Loc.Get("help_" + section), section));
             }
             items.Add(NavItem.Label("h_cues", () => Loc.Get("keys_section_cues")));
             foreach (Cue c in Enum.GetValues(typeof(Cue)))
@@ -41,10 +90,10 @@ namespace CWAccess.Nav
                     Activate = () => CuePlayer.Preview(cue),
                 });
             }
-            InfoPanel.Open(() => Loc.Get("panel_all_keys"), items);
+            InfoPanel.Open(() => Loc.Get("panel_all_keys"), items, help: "help_panel_keys");
         }
 
-        private static List<NavItem> Lines(string text, string prefix)
+        private static List<NavItem> LineItems(string text, string prefix)
         {
             var items = new List<NavItem>();
             int i = 0;

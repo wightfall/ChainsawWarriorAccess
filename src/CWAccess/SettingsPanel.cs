@@ -16,7 +16,7 @@ namespace CWAccess
 
         public static void Open()
         {
-            InfoPanel.Open(() => Loc.Get("panel_settings"), Build());
+            InfoPanel.Open(() => Loc.Get("panel_settings"), Build(), help: "help_panel_settings");
         }
 
         /// <summary>The items; every text is looked up when spoken, so a language change shows at once.</summary>

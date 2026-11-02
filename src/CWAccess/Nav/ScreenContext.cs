@@ -66,10 +66,22 @@ namespace CWAccess.Nav
         /// <summary>How often (seconds) the item list is rebuilt to follow changes on screen.</summary>
         public virtual float RefreshInterval => 0.4f;
 
-        /// <summary>Help text for F1: the keys of this screen.</summary>
-        public virtual string KeyHelp()
+        /// <summary>F1: the keys that work on this screen now, one sentence each (by default from its items).</summary>
+        public virtual List<string> HelpLines(IList<NavItem> items)
         {
-            return Loc.Get("help_menu");
+            List<string> lines = KeyHelp.ForItems(items, letters: true);
+            string back = BackHelp();
+            if (back != null) lines.Add(back);
+            return lines;
+        }
+
+        /// <summary>True for the list of every key (Shift+F1).</summary>
+        public virtual bool IsKeyList => false;
+
+        /// <summary>What Escape does on this screen, for F1; null when it does nothing.</summary>
+        public virtual string BackHelp()
+        {
+            return null;
         }
     }
 }

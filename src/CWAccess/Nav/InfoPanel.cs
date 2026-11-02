@@ -16,26 +16,31 @@ namespace CWAccess.Nav
         private readonly List<NavItem> items;
         private readonly bool startAtEnd;
         private readonly int number;
+        private readonly string help;
 
-        private InfoPanel(System.Func<string> title, List<NavItem> items, bool startAtEnd)
+        private InfoPanel(System.Func<string> title, List<NavItem> items, bool startAtEnd, string help)
         {
             this.title = title;
             this.items = items;
             this.startAtEnd = startAtEnd;
+            this.help = help;
             number = ++opened;
         }
 
         public static InfoPanel Current => open;
 
-        public static void Open(string title, List<NavItem> items, bool startAtEnd = false)
+        public static void Open(string title, List<NavItem> items, bool startAtEnd = false, string help = null)
         {
-            Open(() => title, items, startAtEnd);
+            Open(() => title, items, startAtEnd, help);
         }
 
-        /// <summary>A panel whose title is looked up each time it is spoken (it follows a language change).</summary>
-        public static void Open(System.Func<string> title, List<NavItem> items, bool startAtEnd = false)
+        /// <summary>
+        /// A panel whose title is looked up each time it is spoken (it follows a language change).
+        /// help: the text key of its keys for F1 (null: worked out from its items).
+        /// </summary>
+        public static void Open(System.Func<string> title, List<NavItem> items, bool startAtEnd = false, string help = null)
         {
-            open = new InfoPanel(title, items, startAtEnd);
+            open = new InfoPanel(title, items, startAtEnd, help);
             Speaker.Stop();
             Audio.CuePlayer.Play(Audio.Cue.PanelOpen);
             Navigator.SetContext(open, announce: false);
@@ -56,7 +61,7 @@ namespace CWAccess.Nav
 
         public override string Title()
         {
-            return Loc.Get("panel_title", title(), items.Count);
+            return items.Count == 1 ? Loc.Get("panel_title_one", title()) : Loc.Get("panel_title", title(), items.Count);
         }
 
         public override List<NavItem> Build()
@@ -83,9 +88,12 @@ namespace CWAccess.Nav
             return true;
         }
 
-        public override string KeyHelp()
+        /// <summary>The Shift+F1 list itself: F1 there does not point to Shift+F1.</summary>
+        public override bool IsKeyList => help == "help_panel_keys";
+
+        public override List<string> HelpLines(IList<NavItem> list)
         {
-            return Loc.Get("help_panel");
+            return KeyHelp.ForPanel(help, list);
         }
     }
 }

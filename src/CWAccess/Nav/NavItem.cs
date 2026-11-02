@@ -24,6 +24,9 @@ namespace CWAccess.Nav
         /// <summary>Left / Right with -1 / +1. Null when the item cannot be adjusted.</summary>
         public Action<int> Adjust;
 
+        /// <summary>A checkbox or radio button: Enter switches it (said by F1).</summary>
+        public bool IsSwitch;
+
         /// <summary>For sorting by screen position (screen pixels, y grows upwards).</summary>
         public Vector2 Position;
 

@@ -83,7 +83,7 @@ namespace CWAccess
             {
                 case KeyCode.F1:
                     if (shift) KeyHelp.ShowAll(ctx);
-                    else KeyHelp.ShowScreen(ctx);
+                    else KeyHelp.SayScreen(ctx);
                     return;
                 case KeyCode.F2:
                     SettingsPanel.Open();

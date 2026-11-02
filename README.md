@@ -48,8 +48,9 @@ Setup command line: `CWAccess-Setup.exe [--quiet] [--install | --uninstall] [--g
 
 ## Keys
 
-Press **F1** on any screen to hear its keys (they are also listed: Up/Down to go through them, Escape to close).
-Press **Shift+F1** for every key of the mod and the list of sound cues (Enter on a cue plays it).
+Press **F1** on any screen to hear the keys that work there. Nothing opens: the mod works out the keys from what is
+on the screen (a slider, a checkbox, cards, a Back button...). Press **Shift+F1** for the list of every key of the
+mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escape to close).
 
 ### Everywhere
 
