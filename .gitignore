@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+dist/
+TestResults/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+
+# Third-party binaries (downloaded by tools/fetch-deps.ps1, shipped only inside release packages)
+lib/
+
+# Game files, decompiled sources and anything else that is not part of the mod
+*.zip
+*.log
+decomp/
+Managed/
+Assembly-CSharp*.dll
+CWAccess.ini
+commands.txt

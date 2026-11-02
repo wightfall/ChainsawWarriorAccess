@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>CWAccess-Setup</AssemblyName>
+    <RootNamespace>CWAccess.Installer</RootNamespace>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Cecil is embedded in the exe: the game's CWAccess folder holds an older Cecil that Harmony needs. -->
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(PkgMono_Cecil)/lib/net40/Mono.Cecil.dll" LogicalName="Mono.Cecil.dll" />
+  </ItemGroup>
+  <Target Name="NoCecilCopy" AfterTargets="Build">
+    <Delete Files="$(TargetDir)Mono.Cecil.dll;$(TargetDir)Mono.Cecil.Mdb.dll;$(TargetDir)Mono.Cecil.Pdb.dll;$(TargetDir)Mono.Cecil.Rocks.dll" />
+  </Target>
+</Project>

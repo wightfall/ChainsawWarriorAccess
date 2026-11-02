@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Chainsaw Warrior runs on Unity 4.6 (Mono, .NET 3.5 profile, 32-bit). -->
+    <TargetFramework>net35</TargetFramework>
+    <AssemblyName>CWAccess</AssemblyName>
+    <RootNamespace>CWAccess</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Copy the built mod straight into the game when the game is installed. -->
+    <DeployToGame Condition="'$(DeployToGame)' == ''">true</DeployToGame>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony"><HintPath>..\..\lib\harmony\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp-firstpass"><HintPath>$(ManagedDir)\Assembly-CSharp-firstpass.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="DeployMod" AfterTargets="Build" Condition="'$(DeployToGame)' == 'true' And Exists('$(ManagedDir)\Assembly-CSharp.dll')">
+    <ItemGroup>
+      <ModFile Include="$(TargetDir)CWAccess.dll" />
+      <ModFile Include="$(MSBuildThisFileDirectory)..\..\lib\harmony\*.dll" />
+      <ModFile Include="$(MSBuildThisFileDirectory)..\..\lib\nvda\nvdaControllerClient32.dll" />
+      <ModFile Include="$(MSBuildThisFileDirectory)..\CWAccess.SpeechHost\bin\Release\net472\CWAccess.SpeechHost.exe" Condition="Exists('$(MSBuildThisFileDirectory)..\CWAccess.SpeechHost\bin\Release\net472\CWAccess.SpeechHost.exe')" />
+    </ItemGroup>
+    <MakeDir Directories="$(GameDir)\CWAccess" />
+    <Copy SourceFiles="@(ModFile)" DestinationFolder="$(GameDir)\CWAccess" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

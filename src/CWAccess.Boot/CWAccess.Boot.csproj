@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Loaded by the game itself (Unity 4.6, .NET 3.5 profile); lives in CWSteamPC_Data\Managed. -->
+    <TargetFramework>net35</TargetFramework>
+    <AssemblyName>CWAccess.Boot</AssemblyName>
+    <RootNamespace>CWAccess.Boot</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>
