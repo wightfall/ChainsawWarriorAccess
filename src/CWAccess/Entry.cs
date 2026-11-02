@@ -43,11 +43,28 @@ namespace CWAccess
     /// <summary>Runs the mod every frame, in every scene.</summary>
     internal sealed class ModBehaviour : MonoBehaviour
     {
+        private string scene;
+        private float collectAt;
+
         private void Update()
         {
             try
             {
+                // Each new scene (menu, comic, game): collect its texts for the translation template a moment later,
+                // when its screens have set their labels.
+                if (Application.loadedLevelName != scene)
+                {
+                    scene = Application.loadedLevelName;
+                    collectAt = Time.realtimeSinceStartup + 2f;
+                }
+                if (collectAt > 0f && Time.realtimeSinceStartup >= collectAt)
+                {
+                    collectAt = 0f;
+                    Game.GameText.CollectScene();
+                }
                 Speaker.Tick(Time.realtimeSinceStartup);
+                // A language file in use was saved: it is already reloaded; say so.
+                if (Loc.WatchFiles(Time.realtimeSinceStartup)) Speaker.Queue(Loc.Get("lang_reloaded", Loc.LanguageName));
                 AccessController.Update();
             }
             catch (Exception e)

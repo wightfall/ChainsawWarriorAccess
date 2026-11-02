@@ -17,6 +17,7 @@ namespace CWAccess
         {
             ["mod_loaded"] = "Chainsaw Warrior Access loaded. Press F1 for keys.",
             ["speech_using"] = "Speech through {0}.",
+            ["lang_reloaded"] = "Language file reloaded: {0}.",
             ["dump_done"] = "Screen written to the log.",
             ["and"] = "and",
 
@@ -96,6 +97,18 @@ namespace CWAccess
 
             // Cards
             ["card_room"] = "Room: {0}",
+            ["room_Corridor"] = "Corridor",
+            ["room_Stairs"] = "Stairs",
+            ["room_Room"] = "Room",
+            ["room_Balcony"] = "Balcony",
+            ["room_Elevator"] = "Elevator",
+            ["room_Wandering Zombie"] = "Wandering zombie",
+            ["category_C"] = "Clothing",
+            ["category_D"] = "Device",
+            ["category_G"] = "Gun",
+            ["category_H"] = "Hand-to-hand weapon",
+            ["category_W"] = "Heavy weapon",
+            ["category_S"] = "Special",
             ["card_room_unknown"] = "unknown room",
             ["card_face_down"] = "The card is face down.",
             ["card_none"] = "No card.",
@@ -339,6 +352,9 @@ namespace CWAccess
         private static Dictionary<string, string> active = new Dictionary<string, string>();
         private static Dictionary<string, string> custom = new Dictionary<string, string>();
         private static string modDir;
+        private static string setting = "auto";
+        private static readonly Dictionary<string, DateTime> stamps = new Dictionary<string, DateTime>();
+        private static float nextWatch;
 
         /// <summary>Code of the language in use ("en", "th"...).</summary>
         public static string Code { get; private set; } = "en";
@@ -353,17 +369,18 @@ namespace CWAccess
         }
 
         /// <summary>Loads the language chosen by the setting and the player's strings.txt.</summary>
-        public static void Init(string dir, string setting)
+        public static void Init(string dir, string languageSetting)
         {
             modDir = dir;
-            custom = ReadCustom(Path.Combine(dir, "strings.txt"));
-            Use(setting);
+            Use(languageSetting);
         }
 
         /// <summary>Switches language: "auto", "en" or a file code. Unknown codes fall back to English.</summary>
-        public static void Use(string setting)
+        public static void Use(string languageSetting)
         {
+            setting = string.IsNullOrEmpty(languageSetting) ? "auto" : languageSetting;
             string code = Resolve(setting);
+            custom = modDir != null ? ReadCustom(Path.Combine(modDir, "strings.txt")) : new Dictionary<string, string>();
             active = new Dictionary<string, string>();
             Code = "en";
             LanguageName = "English";
@@ -400,6 +417,61 @@ namespace CWAccess
             }
             Log.Info("Language: " + LanguageName + " (" + Code + "), " + active.Count + " translated texts");
             Game.GameText.Use(modDir, Code);
+            RememberStamps();
+        }
+
+        /// <summary>The files the current language comes from: saving any of them reloads it in the game.</summary>
+        private static IEnumerable<string> WatchedFiles()
+        {
+            if (modDir == null) yield break;
+            yield return Path.Combine(modDir, "strings.txt");
+            if (Code != "en")
+            {
+                yield return Path.Combine(Path.Combine(modDir, "Languages"), Code + ".txt");
+                yield return Path.Combine(Game.GameText.GameDir(modDir), Code + ".txt");
+            }
+            else if (!string.Equals(setting, "en", StringComparison.OrdinalIgnoreCase) && !string.Equals(setting, "auto", StringComparison.OrdinalIgnoreCase))
+            {
+                // A language chosen before its file existed: it is picked up as soon as the file appears.
+                yield return Path.Combine(Path.Combine(modDir, "Languages"), setting + ".txt");
+            }
+        }
+
+        private static DateTime Stamp(string path)
+        {
+            try
+            {
+                return File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+            }
+            catch (Exception)
+            {
+                return DateTime.MinValue;
+            }
+        }
+
+        private static void RememberStamps()
+        {
+            stamps.Clear();
+            foreach (string p in WatchedFiles()) stamps[p] = Stamp(p);
+        }
+
+        /// <summary>
+        /// Called every frame: every 2 seconds checks whether a language file in use was saved, and reloads the
+        /// language at once (no restart), so a translator hears a changed text right away.
+        /// Returns true when something was reloaded.
+        /// </summary>
+        public static bool WatchFiles(float now)
+        {
+            if (now < nextWatch || modDir == null) return false;
+            nextWatch = now + 2f;
+            bool changed = false;
+            foreach (string p in WatchedFiles())
+            {
+                if (!stamps.TryGetValue(p, out DateTime before) || before != Stamp(p)) changed = true;
+            }
+            if (!changed) return false;
+            Use(setting);
+            return true;
         }
 
         /// <summary>"auto" becomes the system language when the mod has a file for it, else English.</summary>

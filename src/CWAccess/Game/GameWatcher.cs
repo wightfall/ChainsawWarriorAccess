@@ -147,7 +147,8 @@ namespace CWAccess.Game
                 case "EquipmentPoints": value = p.mnEquipmentPoints.ToString(); break;
                 default: return null;
             }
-            string title = stat.ContainsKey("title") ? stat["title"] : var;
+            // The game's stat titles are plain English strings; spoken in the mod's language when translated.
+            string title = stat.ContainsKey("title") ? GameText.Speak(stat["title"]) : var;
             if (var == "EquipmentPoints") title = Loc.Get("stat_points", string.Empty).Trim();
             Say(Loc.Get("stat_rolled", title, value));
             return var;

@@ -87,8 +87,8 @@ namespace CWAccess.Screens
         {
             foreach (UILabel l in root.GetComponentsInChildren<UILabel>())
             {
-                string t = TextUtil.Clean(l.text);
-                if (string.Equals(t, text, StringComparison.OrdinalIgnoreCase)) return t;
+                // Found by the game's English caption, spoken in the mod's language.
+                if (string.Equals(TextUtil.CleanRaw(l.text), text, StringComparison.OrdinalIgnoreCase)) return TextUtil.Clean(l.text);
             }
             return null;
         }

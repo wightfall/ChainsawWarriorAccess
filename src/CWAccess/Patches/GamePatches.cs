@@ -238,6 +238,7 @@ namespace CWAccess.Patches
         }
     }
 
+
     /// <summary>NGUI's own keyboard handling (Enter clicks the last clicked button, WASD/arrows move sliders) would fight the mod.</summary>
     [HarmonyPatch(typeof(UICamera), nameof(UICamera.ProcessOthers))]
     internal static class NguiKeyboardPatch

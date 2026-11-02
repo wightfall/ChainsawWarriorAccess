@@ -43,6 +43,8 @@ $files = @(
 )
 foreach ($f in $files) { Copy-Item (Join-Path $root $f) $out }
 Copy-Item (Join-Path $root "src\CWAccess\Languages\*.txt") (Join-Path $out "Languages")
+New-Item -ItemType Directory -Force (Join-Path $out "Languages\game") | Out-Null
+Copy-Item (Join-Path $root "src\CWAccess\Languages\game\*.txt") (Join-Path $out "Languages\game")
 Copy-Item (Join-Path $root "README.md") (Join-Path $out "CWAccess-README.md")
 Copy-Item (Join-Path $root "LICENSE") (Join-Path $out "LICENSE.txt")
 Copy-Item (Join-Path $root "THIRD-PARTY-NOTICES.md") (Join-Path $out "THIRD-PARTY-NOTICES.md")

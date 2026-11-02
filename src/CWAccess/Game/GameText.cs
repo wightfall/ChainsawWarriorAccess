@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace CWAccess.Game
 {
     /// <summary>
-    /// Optional translation of the game's own texts (cards, messages, menus) for speech only: the screen keeps the
+    /// Translation of the game's own texts (menus, cards, messages, tutorials) for speech only: the screen keeps the
     /// game's English, whose fonts have no other alphabets. File CWAccess\Languages\game\code.txt:
-    ///   [keys]   game text key = translation      (keys as in the game's text table; F12 debug "gametemplate")
-    ///   [texts]  English text on screen = translation   (texts the game does not take from its table)
-    /// Texts with %name parts (filled in by the game) are matched with those parts as wildcards.
+    ///   [keys]   game text key = translation          (the keys of the game's text table)
+    ///   [texts]  English text on screen = translation  (texts the game does not take from its table)
+    /// Texts with %name parts (filled in by the game) are matched with those parts as wildcards; a filled-in part
+    /// that is itself a known text is translated too. Languages\game\template.txt is written on the player's
+    /// computer from the game's own table and the screens' texts (the game's texts are not shipped with the mod).
     /// </summary>
     internal static class GameText
     {
@@ -25,34 +29,63 @@ namespace CWAccess.Game
         private static Dictionary<string, string> byText = new Dictionary<string, string>();
         private static List<Pattern> patterns;
         private static readonly Regex Token = new Regex(@"%([A-Za-z]+)");
+        private static readonly SortedDictionary<string, bool> screenTexts = new SortedDictionary<string, bool>(StringComparer.Ordinal);
+        private static string modDir;
+        private static int templateTexts = -1;
+
+        /// <summary>The file in use, for live reloading (null when none).</summary>
+        public static string FilePath { get; private set; }
 
         public static bool Active => byKey.Count > 0 || byText.Count > 0;
 
-        public static void Use(string modDir, string code)
+        /// <summary>The game's text table (key -> English), null before the game loaded it.</summary>
+        public static Dictionary<string, string> Table => R.GetStatic<Dictionary<string, string>>(typeof(CLocalisationManager), "mpCurrentLanguage");
+
+        public static int KeyCount => byKey.Count;
+
+        public static int TextCount => byText.Count;
+
+        public static void Use(string dir, string code)
         {
+            modDir = dir;
             byKey = new Dictionary<string, string>();
             byText = new Dictionary<string, string>();
             patterns = null;
-            if (modDir == null || code == "en") return;
-            string path = Path.Combine(Path.Combine(Path.Combine(modDir, "Languages"), "game"), code + ".txt");
+            FilePath = null;
+            if (dir == null || code == "en") return;
+            string path = Path.Combine(GameDir(dir), code + ".txt");
             if (!File.Exists(path)) return;
+            FilePath = path;
             try
             {
-                LanguageFile f = LanguageFile.Load(path);
-                if (f.Sections.TryGetValue("keys", out Dictionary<string, string> keys))
-                {
-                    foreach (KeyValuePair<string, string> kv in keys) if (kv.Value.Length > 0) byKey[kv.Key] = kv.Value;
-                }
-                if (f.Sections.TryGetValue("texts", out Dictionary<string, string> texts))
-                {
-                    foreach (KeyValuePair<string, string> kv in texts) if (kv.Value.Length > 0) byText[TextUtil.CleanRaw(kv.Key)] = kv.Value;
-                }
-                Log.Info("Game texts: " + byKey.Count + " keys and " + byText.Count + " texts translated (" + path + ")");
+                Load(LanguageFile.Load(path));
+                Log.Info("Game texts: " + byKey.Count + " keys and " + byText.Count + " screen texts translated (" + path + ")");
             }
             catch (Exception e)
             {
                 Log.Error("Could not read " + path + ": " + e.Message);
             }
+        }
+
+        /// <summary>Takes the translations of a parsed file (also used by the tests).</summary>
+        public static void Load(LanguageFile f)
+        {
+            byKey = new Dictionary<string, string>();
+            byText = new Dictionary<string, string>();
+            patterns = null;
+            if (f.Sections.TryGetValue("keys", out Dictionary<string, string> keys))
+            {
+                foreach (KeyValuePair<string, string> kv in keys) if (kv.Value.Length > 0) byKey[kv.Key] = kv.Value;
+            }
+            if (f.Sections.TryGetValue("texts", out Dictionary<string, string> texts))
+            {
+                foreach (KeyValuePair<string, string> kv in texts) if (kv.Value.Length > 0) byText[TextUtil.CleanRaw(kv.Key)] = kv.Value;
+            }
+        }
+
+        public static string GameDir(string dir)
+        {
+            return Path.Combine(Path.Combine(dir, "Languages"), "game");
         }
 
         /// <summary>The translation of a game text key, or the English text given.</summary>
@@ -66,14 +99,19 @@ namespace CWAccess.Game
         {
             if (!Active || string.IsNullOrEmpty(text)) return text;
             string clean = TextUtil.CleanRaw(text);
-            if (byText.TryGetValue(clean, out string t)) return t;
             BuildPatterns();
+            if (byText.TryGetValue(clean, out string t)) return t;
+            if (patterns == null) return text;
             foreach (Pattern p in patterns)
             {
                 Match m = p.Match.Match(clean);
                 if (!m.Success) continue;
                 string result = p.Translation;
-                foreach (string name in p.Names) result = result.Replace("%" + name, m.Groups[name].Value);
+                foreach (string name in p.Names)
+                {
+                    string value = m.Groups[name].Value;
+                    result = result.Replace("%" + name, byText.TryGetValue(value, out string v) ? v : value);
+                }
                 return result;
             }
             return text;
@@ -83,55 +121,115 @@ namespace CWAccess.Game
         private static void BuildPatterns()
         {
             if (patterns != null) return;
-            patterns = new List<Pattern>();
-            var table = R.GetStatic<Dictionary<string, string>>(typeof(CLocalisationManager), "mpCurrentLanguage");
+            Dictionary<string, string> table = Table;
             if (table == null) return;
+            patterns = new List<Pattern>();
             foreach (KeyValuePair<string, string> kv in byKey)
             {
                 if (!table.TryGetValue(kv.Key, out string english)) continue;
                 english = TextUtil.CleanRaw(english);
+                if (english.Length == 0) continue;
                 if (english.IndexOf('%') < 0)
                 {
                     if (!byText.ContainsKey(english)) byText[english] = kv.Value;
                     continue;
                 }
-                var names = new List<string>();
-                string rx = "^" + Token.Replace(Regex.Escape(english).Replace(@"\%", "%"), m =>
-                {
-                    string n = m.Groups[1].Value;
-                    if (names.Contains(n)) return @"\k<" + n + ">";
-                    names.Add(n);
-                    return "(?<" + n + ">.+?)";
-                }) + "$";
-                try
-                {
-                    patterns.Add(new Pattern { Match = new Regex(rx), Translation = kv.Value, Names = names.ToArray() });
-                }
-                catch (ArgumentException)
-                {
-                    // Not a usable pattern; the text stays English.
-                }
+                Pattern p = MakePattern(english, kv.Value);
+                if (p != null) patterns.Add(p);
             }
             // Longer patterns first: they are more specific.
             patterns.Sort((a, b) => b.Match.ToString().Length.CompareTo(a.Match.ToString().Length));
         }
 
-        /// <summary>Debug: writes every game text as a translation template (stays on the player's computer).</summary>
-        public static string WriteTemplate(string modDir)
+        private static Pattern MakePattern(string english, string translation)
         {
-            var table = R.GetStatic<Dictionary<string, string>>(typeof(CLocalisationManager), "mpCurrentLanguage");
-            string dir = Path.Combine(Path.Combine(modDir, "Languages"), "game");
-            Directory.CreateDirectory(dir);
-            string path = Path.Combine(dir, "template.txt");
-            var sb = new System.Text.StringBuilder();
-            sb.Append("# Language: (name of your language)\r\n# Translation of the game's texts for speech. Keep %words as they are.\r\n[keys]\r\n");
+            var names = new List<string>();
+            string rx = "^" + Token.Replace(Regex.Escape(english), m =>
+            {
+                string n = m.Groups[1].Value;
+                if (names.Contains(n)) return @"\k<" + n + ">";
+                names.Add(n);
+                return "(?<" + n + ">.+?)";
+            }) + "$";
+            try
+            {
+                return new Pattern { Match = new Regex(rx), Translation = translation, Names = names.ToArray() };
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
+        // ------------------------------------------------------------------ template for translators
+
+        /// <summary>
+        /// Called when a scene starts: remembers the texts of its screens that are not in the game's text table and
+        /// keeps Languages\game\template.txt up to date with them and with the table.
+        /// </summary>
+        public static void CollectScene()
+        {
+            try
+            {
+                Dictionary<string, string> table = Table;
+                var known = new HashSet<string>();
+                if (table != null) foreach (string v in table.Values) known.Add(TextUtil.CleanRaw(v));
+                foreach (UnityEngine.Object o in Resources.FindObjectsOfTypeAll(typeof(UILabel)))
+                {
+                    var l = o as UILabel;
+                    if (l == null) continue;
+                    string t = TextUtil.CleanRaw(l.text);
+                    if (IsTranslatable(t) && !known.Contains(t)) screenTexts[t] = true;
+                }
+                if (modDir != null && table != null && screenTexts.Count != templateTexts) WriteTemplate(modDir);
+            }
+            catch (Exception e)
+            {
+                Log.Error("Collecting screen texts failed: " + e.Message);
+            }
+        }
+
+        /// <summary>Texts worth translating: something with letters, not a placeholder of the scene files.</summary>
+        public static bool IsTranslatable(string t)
+        {
+            if (string.IsNullOrEmpty(t) || t == "New Label" || t == "Label" || t == "Text") return false;
+            int letters = 0;
+            foreach (char c in t) if (char.IsLetter(c)) letters++;
+            return letters >= 2;
+        }
+
+        /// <summary>Writes the template: the game's whole text table under [keys] and the screens' texts under [texts].</summary>
+        public static string WriteTemplate(string dir)
+        {
+            string folder = GameDir(dir);
+            Directory.CreateDirectory(folder);
+            string path = Path.Combine(folder, "template.txt");
+            var sb = new StringBuilder();
+            sb.Append("# Language: (name of your language)\r\n");
+            sb.Append("# Translation of Chainsaw Warrior's own texts, spoken by the mod (the screen stays English).\r\n");
+            sb.Append("# Copy this file to <code>.txt (th.txt, de.txt ...) next to it and translate the right side of each line.\r\n");
+            sb.Append("# Keep %words (the game fills them in) and \\n (line breaks). Lines you leave in English stay English.\r\n");
+            sb.Append("# Written by the mod from the game on this computer; it grows as you visit more screens.\r\n");
+            sb.Append("[keys]\r\n");
+            Dictionary<string, string> table = Table;
             if (table != null)
             {
-                foreach (KeyValuePair<string, string> kv in table) sb.Append(kv.Key).Append(" = ").Append(kv.Value.Replace("\r", string.Empty).Replace("\n", "\\n")).Append("\r\n");
+                foreach (KeyValuePair<string, string> kv in table) sb.Append(kv.Key).Append(" = ").Append(OneLine(kv.Value)).Append("\r\n");
             }
             sb.Append("[texts]\r\n");
-            File.WriteAllText(path, sb.ToString(), new System.Text.UTF8Encoding(true));
+            foreach (string t in screenTexts.Keys)
+            {
+                // A line's key ends at the first "=", and "[...]" or "#..." lines mean something else: such texts cannot be listed.
+                if (t.IndexOf('=') < 0 && !t.StartsWith("[") && !t.StartsWith("#")) sb.Append(t).Append(" = ").Append(t).Append("\r\n");
+            }
+            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(true));
+            templateTexts = screenTexts.Count;
             return path;
+        }
+
+        private static string OneLine(string s)
+        {
+            return (s ?? string.Empty).Replace("\r", string.Empty).Replace("\n", "\\n");
         }
     }
 }

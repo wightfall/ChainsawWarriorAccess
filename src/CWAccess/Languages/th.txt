@@ -7,6 +7,7 @@
 
 mod_loaded = Chainsaw Warrior Access พร้อมใช้งานแล้ว กด F1 เพื่อฟังปุ่มลัด
 speech_using = พูดผ่าน {0}
+lang_reloaded = โหลดไฟล์ภาษาใหม่แล้ว: {0}
 dump_done = บันทึกหน้าจอลงในไฟล์ล็อกแล้ว
 and = และ
 
@@ -87,6 +88,18 @@ not_in_game = ไม่ได้อยู่ในเกม
 hint_continue = กดปุ่ม Continue เพื่อยืนยัน
 
 card_room = ห้อง: {0}
+room_Corridor = ทางเดิน
+room_Stairs = บันได
+room_Room = ห้อง
+room_Balcony = ระเบียง
+room_Elevator = ลิฟต์
+room_Wandering Zombie = ซอมบี้เร่ร่อน
+category_C = เครื่องแต่งกาย
+category_D = อุปกรณ์
+category_G = ปืน
+category_H = อาวุธระยะประชิด
+category_W = อาวุธหนัก
+category_S = พิเศษ
 card_room_unknown = ห้องที่ไม่รู้จัก
 card_face_down = การ์ดยังคว่ำอยู่
 card_none = ไม่มีการ์ด
