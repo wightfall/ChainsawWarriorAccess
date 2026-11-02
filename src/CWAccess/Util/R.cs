@@ -8,17 +8,22 @@ namespace CWAccess
     internal static class R
     {
         private const BindingFlags All = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-        private static readonly Dictionary<string, FieldInfo> fields = new Dictionary<string, FieldInfo>();
+        // By type, then by name: looking a field up builds no text (it runs many times a frame).
+        private static readonly Dictionary<Type, Dictionary<string, FieldInfo>> fields = new Dictionary<Type, Dictionary<string, FieldInfo>>();
         private static readonly Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
 
         public static FieldInfo Field(Type t, string name)
         {
-            string key = t.FullName + "." + name;
-            if (!fields.TryGetValue(key, out FieldInfo f))
+            if (!fields.TryGetValue(t, out Dictionary<string, FieldInfo> byName))
+            {
+                byName = new Dictionary<string, FieldInfo>();
+                fields[t] = byName;
+            }
+            if (!byName.TryGetValue(name, out FieldInfo f))
             {
                 for (Type cur = t; cur != null && f == null; cur = cur.BaseType) f = cur.GetField(name, All);
-                fields[key] = f;
-                if (f == null) Log.Warn("Field not found: " + key);
+                byName[name] = f;
+                if (f == null) Log.Warn("Field not found: " + t.FullName + "." + name);
             }
             return f;
         }

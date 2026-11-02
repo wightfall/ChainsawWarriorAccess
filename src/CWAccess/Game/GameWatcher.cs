@@ -18,15 +18,23 @@ namespace CWAccess.Game
 
         private static CGame watchedGame;
         private static Snapshot last;
+
+        /// <summary>Reused for the next frame's values, so watching the stats makes no new objects.</summary>
+        private static Snapshot spare = new Snapshot();
+
+        /// <summary>Equipment and choices change rarely and cost more to read: they are checked this often (seconds).</summary>
+        private const float SlowCheckEvery = 0.15f;
+
+        private static float nextSlowCheck;
         private static Dictionary<WeaponInfo, string> lastEquipment = new Dictionary<WeaponInfo, string>();
-        private static string lastActions = string.Empty;
+        private static long lastActions;
         private static EGameState lastState = EGameState.GS_None;
         private static bool creating;
 
         /// <summary>The board has just said the choices itself: do not say them again.</summary>
         public static void MarkActionsAnnounced()
         {
-            lastActions = ActionsKey();
+            lastActions = ActionsSignature();
         }
 
         public static void Reset()
@@ -34,7 +42,7 @@ namespace CWAccess.Game
             watchedGame = null;
             last = null;
             lastEquipment.Clear();
-            lastActions = string.Empty;
+            lastActions = 0;
         }
 
         public static void Tick()
@@ -48,13 +56,13 @@ namespace CWAccess.Game
             if (game != watchedGame)
             {
                 watchedGame = game;
-                last = Take(game);
+                last = Take(game, new Snapshot());
                 lastEquipment = EquipmentState(game);
-                lastActions = ActionsKey();
+                lastActions = ActionsSignature();
                 GameLog.Clear();
                 return;
             }
-            Snapshot now = Take(game);
+            Snapshot now = Take(game, spare);
             creating = game.meGameState <= EGameState.GS_InitEnd;
             bool rolled = game.meGameState == EGameState.GS_RollEnd && lastState != EGameState.GS_RollEnd;
             lastState = game.meGameState;
@@ -66,31 +74,34 @@ namespace CWAccess.Game
             }
             else if (Settings.AnnounceStats.Value) SayStatChanges(last, now, null);
             SayTime(last.Time, now.Time);
+            spare = last;
             last = now;
+            float t = UnityEngine.Time.realtimeSinceStartup;
+            if (t < nextSlowCheck) return;
+            nextSlowCheck = t + SlowCheckEvery;
             if (Settings.AnnounceEquipment.Value) SayEquipmentChanges(game);
             else lastEquipment = EquipmentState(game);
             SayActions();
         }
 
-        private static Snapshot Take(CGame g)
+        /// <summary>Copies the player's values into s and returns it.</summary>
+        private static Snapshot Take(CGame g, Snapshot s)
         {
             PlayerStats p = g.mpPlayer;
-            return new Snapshot
-            {
-                Wounds = p.mnWounds,
-                WoundsMax = p.mnWoundsMax,
-                Endurance = p.mnEndurance,
-                Poison = p.mnPoison,
-                Radiation = p.mnRadiation,
-                HtH = p.mnHtH,
-                HtHMod = g.mnHtHModifier,
-                Marksman = p.mnMarksman,
-                Reflex = p.mnReflex,
-                Points = p.mnEquipmentPoints,
-                Time = p.mnCurrentTime,
-                Skill = p.meSkill,
-                SkillKnown = g.meGameState > EGameState.GS_StatRolls || p.mnSkill != 0,
-            };
+            s.Wounds = p.mnWounds;
+            s.WoundsMax = p.mnWoundsMax;
+            s.Endurance = p.mnEndurance;
+            s.Poison = p.mnPoison;
+            s.Radiation = p.mnRadiation;
+            s.HtH = p.mnHtH;
+            s.HtHMod = g.mnHtHModifier;
+            s.Marksman = p.mnMarksman;
+            s.Reflex = p.mnReflex;
+            s.Points = p.mnEquipmentPoints;
+            s.Time = p.mnCurrentTime;
+            s.Skill = p.meSkill;
+            s.SkillKnown = g.meGameState > EGameState.GS_StatRolls || p.mnSkill != 0;
+            return s;
         }
 
         private static void Say(string text)
@@ -231,23 +242,24 @@ namespace CWAccess.Game
             return false;
         }
 
-        private static string ActionsKey()
+        /// <summary>The choices on offer as one number, in order (0: none); comparing it builds no text.</summary>
+        private static long ActionsSignature()
         {
-            var names = new List<string>();
+            long sig = 0;
             foreach (EActionType a in G.Actions)
             {
-                if (a != EActionType.AT_None) names.Add(a.ToString());
+                if (a != EActionType.AT_None) sig = sig * 1000 + (int)a + 1;
             }
-            return string.Join(",", names.ToArray());
+            return sig;
         }
 
         /// <summary>Says the choices once they change (and are not empty).</summary>
         private static void SayActions()
         {
-            string key = ActionsKey();
+            long key = ActionsSignature();
             if (key == lastActions) return;
             lastActions = key;
-            if (key.Length == 0) return;
+            if (key == 0) return;
             // On other screens the board says the choices when it comes back.
             if (!(Nav.Navigator.Context is Board)) return;
             Board.OnActionsChanged();

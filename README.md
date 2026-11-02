@@ -56,7 +56,7 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 
 | Key | Action |
 |-----|--------|
-| Up / Down arrows, Tab / Shift+Tab | Move through the items of the screen |
+| Up / Down arrows, Tab / Shift+Tab | Move through the items of the screen (hold an arrow to keep moving) |
 | Home / End | First / last item |
 | Page Up / Page Down | Previous / next group of items (the sections of the Shift+F1 list and of the settings, the parts of the board, the cards and buttons of card screens); in a long list without groups such as the game log, 10 items |
 | Enter | Press the button, choose the card |
@@ -111,7 +111,8 @@ The game shows two cards at a time in a carousel. The mod lists **all** cards of
 move with Up/Down, press **I** for the whole card. In the equipment shop, Enter buys a card or puts it back
 (with the reason when the game refuses: not enough points, only one gun, only one heavy weapon, 13 cards at most),
 and Left/Right switch between the tabs (Clothing, Devices, Guns, Hand-to-hand, Heavy weapons, Special).
-On Medium and Classic difficulty the shop cards are face down, and the mod says only what a sighted player can see.
+On Medium and Hard ("Classic version") difficulty the shop cards are face down, and the mod says only what a sighted
+player can see; on Medium, the **Buy Reveal (2 Points)** button turns them face up.
 When choosing one card (a weapon to shoot with, an item to use, an enemy to fight), Enter chooses at once.
 
 Guns list the score needed with 2 dice against each kind of target, already adjusted for your marksmanship
@@ -195,6 +196,8 @@ rare situations, so every part of the game can be checked without waiting for it
 | `screen SteamError` | show a screen of the current scene |
 | `endscreen lose_venom` | show the game-over screen without ending the game (no scores or Steam stats) |
 | `dump`, `state`, `dumptexts`, `dumplabels`, `gametemplate` | write the screen, state, texts or template to the log / mod folder |
+| `dumpgo HelpGuide_Contents` | write an object of the screen and everything under it to the log |
+| `perf 10` | measure for 10 seconds how long the mod's work takes each frame (written to the log) |
 
 Switch `CommandFile` off again afterwards.
 
@@ -206,8 +209,10 @@ Projects:
 - `src/CWAccess.SpeechHost` - speech through JAWS or SAPI for players without NVDA.
 - `tests/CWAccess.Tests` - unit tests: language files, the Thai translations of the mod, setup and game texts, the
   translation of the game's texts (whole texts and texts with filled-in parts), live reloading, the templates, settings
-  and their language, sound cues, the installer (a real install, update and uninstall on a copy of the game's DLL),
-  and checks that every part of the game the mod reaches by name still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
+  and their language, sound cues, the F1 keys of each kind of screen, Page Up / Page Down groups, the cached lookups of
+  the game's fields, the installer (a real install, update and uninstall on a copy of the game's DLL, and the setup
+  replacing itself while it runs from the game folder), and checks that every part of the game the mod reaches by name
+  still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
   `Languages\template.txt` after adding texts.
 
 This repository contains no code or assets of the game.

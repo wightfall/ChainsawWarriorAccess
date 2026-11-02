@@ -10,6 +10,10 @@ namespace CWAccess.Nav
     {
         private static readonly Dictionary<string, ScreenContext> cache = new Dictionary<string, ScreenContext>();
 
+        // The screen of the last frame and its context: most frames the screen has not changed.
+        private static CGameScreen lastScreen;
+        private static ScreenContext lastContext;
+
         public static void Tick()
         {
             if (InfoPanel.Current != null)
@@ -38,6 +42,14 @@ namespace CWAccess.Nav
             }
             CGameScreen cur = G.CurrentScreen;
             if (cur == null || cur.gameObject == null) return null;
+            if (ReferenceEquals(cur, lastScreen) && lastContext != null) return lastContext;
+            lastContext = ForScreen(cur);
+            lastScreen = cur;
+            return lastContext;
+        }
+
+        private static ScreenContext ForScreen(CGameScreen cur)
+        {
             string name = G.CurrentScreenName ?? cur.gameObject.name;
             GameObject root = cur.gameObject;
             string key = name + root.GetInstanceID();
@@ -70,7 +82,12 @@ namespace CWAccess.Nav
         {
             if (!cache.TryGetValue(key, out ScreenContext ctx))
             {
-                if (cache.Count > 64) cache.Clear();
+                if (cache.Count > 64)
+                {
+                    cache.Clear();
+                    lastScreen = null;
+                    lastContext = null;
+                }
                 ctx = make();
                 cache[key] = ctx;
             }

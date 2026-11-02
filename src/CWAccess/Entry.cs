@@ -8,7 +8,7 @@ namespace CWAccess
     /// <summary>Started by CWAccess.Boot when the game opens its first screen.</summary>
     public static class Entry
     {
-        public const string Version = "0.3.0";
+        public const string Version = "0.3.1";
 
         internal static string ModDir;
         private static bool initialised;
@@ -43,18 +43,20 @@ namespace CWAccess
     /// <summary>Runs the mod every frame, in every scene.</summary>
     internal sealed class ModBehaviour : MonoBehaviour
     {
-        private string scene;
+        private int scene = -1;
         private float collectAt;
 
         private void Update()
         {
+            long started = Perf.Measuring ? Perf.Now() : 0;
             try
             {
                 // Each new scene (menu, comic, game): collect its texts for the translation template a moment later,
                 // when its screens have set their labels.
-                if (Application.loadedLevelName != scene)
+                int level = Application.loadedLevel;
+                if (level != scene)
                 {
-                    scene = Application.loadedLevelName;
+                    scene = level;
                     collectAt = Time.realtimeSinceStartup + 2f;
                 }
                 if (collectAt > 0f && Time.realtimeSinceStartup >= collectAt)
@@ -71,6 +73,7 @@ namespace CWAccess
             {
                 Log.Error("Update: " + e);
             }
+            if (started != 0) Perf.Frame(started, Time.realtimeSinceStartup);
         }
 
         private void OnApplicationQuit()

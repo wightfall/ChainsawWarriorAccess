@@ -354,7 +354,7 @@ namespace CWAccess.Screens
             return TextUtil.Join(info, cards.Count == 0 ? Loc.Get("cards_none") : cards.Count == 1 ? Loc.Get("cards_count_one") : Loc.Get("cards_count", cards.Count));
         }
 
-        private string shownCards;
+        private long shownCards;
 
         public override void OnEnter()
         {
@@ -362,11 +362,12 @@ namespace CWAccess.Screens
         }
 
         /// <summary>Which cards the list holds (the game can swap them while the screen stays open).</summary>
-        private string CardsSignature()
+        private long CardsSignature()
         {
-            var names = new List<string>();
-            foreach (WeaponInfo w in Cards) names.Add(w.mpEquipment.Name);
-            return string.Join("|", names.ToArray());
+            List<WeaponInfo> cards = Cards;
+            long sig = 17;
+            foreach (WeaponInfo w in cards) sig = sig * 31 + (w.mpEquipment != null && w.mpEquipment.Name != null ? w.mpEquipment.Name.GetHashCode() : 0);
+            return sig * 31 + cards.Count;
         }
 
         /// <summary>
@@ -375,7 +376,7 @@ namespace CWAccess.Screens
         /// </summary>
         public override void Tick()
         {
-            string now = CardsSignature();
+            long now = CardsSignature();
             if (now == shownCards) return;
             shownCards = now;
             Navigator.Rebuild(keepFocus: false);

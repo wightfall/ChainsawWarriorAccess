@@ -42,26 +42,30 @@ namespace CWAccess
 
         private static void HandleInput()
         {
+            if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) Speaker.Stop();
+            // Most frames no key goes down and none is held: nothing more to check.
+            if (!Input.anyKeyDown && heldKey == KeyCode.None) return;
+
             bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             bool alt = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-
-            if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) Speaker.Stop();
             if (alt) return;
 
             foreach (KeyCode key in Watched)
             {
                 if (Input.GetKeyDown(key))
                 {
-                    heldKey = key;
+                    // Only Up and Down repeat while held.
+                    heldKey = key == KeyCode.UpArrow || key == KeyCode.DownArrow ? key : KeyCode.None;
                     nextRepeat = Time.realtimeSinceStartup + 0.45f;
                     OnKey(key, shift, ctrl);
                     return;
                 }
             }
 
-            // Holding Up / Down repeats, like in a normal list.
-            if (heldKey == KeyCode.UpArrow || heldKey == KeyCode.DownArrow)
+            // Holding Up / Down repeats, like in a normal list. At the first or last item the repeat stops quietly:
+            // pressing the key there already said "Top" or "Bottom".
+            if (heldKey != KeyCode.None)
             {
                 if (!Input.GetKey(heldKey))
                 {
@@ -70,7 +74,10 @@ namespace CWAccess
                 else if (Time.realtimeSinceStartup >= nextRepeat)
                 {
                     nextRepeat = Time.realtimeSinceStartup + 0.12f;
-                    Navigator.Move(heldKey == KeyCode.UpArrow ? -1 : 1);
+                    int dir = heldKey == KeyCode.UpArrow ? -1 : 1;
+                    int i = Navigator.Items.IndexOf(Navigator.Focused);
+                    if (i + dir < 0 || i + dir >= Navigator.Items.Count) heldKey = KeyCode.None;
+                    else Navigator.Move(dir);
                 }
             }
         }

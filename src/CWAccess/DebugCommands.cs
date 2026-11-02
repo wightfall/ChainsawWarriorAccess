@@ -174,6 +174,9 @@ namespace CWAccess
                 case "say":
                     Speaker.Say(Rest(line, p));
                     break;
+                case "perf":
+                    Perf.Start(Time.realtimeSinceStartup, p.Length > 1 ? float.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) : 10f);
+                    break;
             }
         }
 
