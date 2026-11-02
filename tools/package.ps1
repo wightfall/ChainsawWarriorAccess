@@ -51,5 +51,7 @@ try {
         [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $f.FullName, "CWAccess/" + $f.Name, [IO.Compression.CompressionLevel]::Optimal) | Out-Null
     }
 } finally { $archive.Dispose() }
+& (Join-Path $PSScriptRoot "check-binaries.ps1") -Folder $dist
+if ($LASTEXITCODE -ne 0) { throw "Do not publish: a program file in dist looks modified." }
 Write-Host "Package: $zip"
 Get-FileHash $zip -Algorithm SHA256 | ForEach-Object { Write-Host "SHA256: $($_.Hash)" }
