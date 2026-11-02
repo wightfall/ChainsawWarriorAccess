@@ -5,19 +5,35 @@ using System.Text;
 
 namespace CWAccess
 {
-    /// <summary>One option; changing Value saves the settings file.</summary>
-    internal sealed class Setting<T>
+    internal interface ISetting
     {
-        public readonly string Key;
-        public readonly string Description;
+        string Key { get; }
+        string Description { get; }
+        string Text { get; }
+        void Load(string text);
+        void Reset();
+    }
+
+    /// <summary>One option; changing Value saves the settings file.</summary>
+    internal sealed class Setting<T> : ISetting
+    {
+        private readonly T defaultValue;
         private T value;
 
         public Setting(string key, T defaultValue, string description)
         {
             Key = key;
+            this.defaultValue = defaultValue;
             value = defaultValue;
             Description = description;
+            Settings.Register(this);
         }
+
+        public string Key { get; }
+
+        public string Description { get; }
+
+        public T Default => defaultValue;
 
         public T Value
         {
@@ -29,7 +45,7 @@ namespace CWAccess
             }
         }
 
-        internal void Load(string text)
+        public void Load(string text)
         {
             try
             {
@@ -41,12 +57,33 @@ namespace CWAccess
             }
         }
 
-        internal string Text => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+        public void Reset()
+        {
+            value = defaultValue;
+        }
+
+        public string Text => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    /// <summary>Options in CWAccess\CWAccess.ini (also changeable in game with F2).</summary>
+    /// <summary>Options in CWAccess\CWAccess.ini (all changeable in the game with F2).</summary>
     internal static class Settings
     {
+        private static readonly List<ISetting> all = new List<ISetting>();
+
+        public static IList<ISetting> All => all;
+
+        internal static void Register(ISetting s)
+        {
+            all.Add(s);
+        }
+
+        // ---- Speech
+        public static readonly Setting<string> Language = new Setting<string>("Language", "auto",
+            "Language of the mod: auto (the system language when the mod has it), en, th, or the code of any file in CWAccess\\Languages.");
+
+        public static readonly Setting<bool> SpeakRoles = new Setting<bool>("SpeakRoles", true,
+            "Say the kind of control after its name (button, slider...).");
+
         public static readonly Setting<bool> AnnounceActions = new Setting<bool>("AnnounceActions", true,
             "Say the available choices (Shoot, Hand-to-hand, Escape...) whenever they change.");
 
@@ -59,20 +96,53 @@ namespace CWAccess
         public static readonly Setting<bool> AnnounceEquipment = new Setting<bool>("AnnounceEquipment", true,
             "Say equipment you gain or lose and changes of uses and spare clips.");
 
+        public static readonly Setting<bool> AnnounceRoom = new Setting<bool>("AnnounceRoom", true,
+            "Say the room on the back of each new house card.");
+
+        public static readonly Setting<bool> FullCardOnTurn = new Setting<bool>("FullCardOnTurn", true,
+            "Read the whole card text when a card is turned over (off: only its name and kind; press C for the rest).");
+
         public static readonly Setting<int> TimeEveryMinutes = new Setting<int>("TimeEveryMinutes", 10,
             "Say the time left whenever it passes a multiple of this many minutes (0 = never).");
 
         public static readonly Setting<bool> ReadTutorials = new Setting<bool>("ReadTutorials", true,
             "Read the tutorial boxes that point at parts of the screen.");
 
+        public static readonly Setting<bool> RepeatMessageOnReturn = new Setting<bool>("RepeatMessageOnReturn", true,
+            "Back on the game board from a menu or card screen, say the last message again.");
+
+        public static readonly Setting<bool> DescribeComic = new Setting<bool>("DescribeComic", true,
+            "Describe the pictures of the intro comic.");
+
+        // ---- Sound
+        public static readonly Setting<bool> SoundCues = new Setting<bool>("SoundCues", true,
+            "Play short sounds for moving, edges, cards, enemies, dice, damage and more.");
+
+        public static readonly Setting<int> CueVolume = new Setting<int>("CueVolume", 70,
+            "Overall volume of the sound cues, 0 to 100.");
+
+        // ---- Debug
         public static readonly Setting<bool> LogSpeech = new Setting<bool>("LogSpeech", true,
             "Write everything the mod says to CWAccess.log.");
 
         public static readonly Setting<bool> CommandFile = new Setting<bool>("CommandFile", false,
             "Developer testing: read commands from CWAccess\\commands.txt and keep running while the window is in the background.");
 
+        /// <summary>Volume of each sound cue (0-100), key "Cue.Name".</summary>
+        public static readonly Dictionary<Audio.Cue, Setting<int>> CueVolumes = MakeCueVolumes();
+
         private static string path;
-        private static bool loading;
+        private static bool loading = true;
+
+        private static Dictionary<Audio.Cue, Setting<int>> MakeCueVolumes()
+        {
+            var d = new Dictionary<Audio.Cue, Setting<int>>();
+            foreach (Audio.Cue c in Enum.GetValues(typeof(Audio.Cue)))
+            {
+                d[c] = new Setting<int>("Cue." + c, 100, "Volume of the " + c + " sound, 0 to 100.");
+            }
+            return d;
+        }
 
         public static void Load(string dir)
         {
@@ -82,7 +152,7 @@ namespace CWAccess
             {
                 if (File.Exists(path))
                 {
-                    var values = new Dictionary<string, string>();
+                    var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     foreach (string raw in File.ReadAllLines(path, Encoding.UTF8))
                     {
                         string line = raw.Trim();
@@ -90,14 +160,10 @@ namespace CWAccess
                         int eq = line.IndexOf('=');
                         if (eq > 0) values[line.Substring(0, eq).Trim()] = line.Substring(eq + 1).Trim();
                     }
-                    if (values.TryGetValue(AnnounceActions.Key, out string v)) AnnounceActions.Load(v);
-                    if (values.TryGetValue(AnnounceDice.Key, out v)) AnnounceDice.Load(v);
-                    if (values.TryGetValue(AnnounceStats.Key, out v)) AnnounceStats.Load(v);
-                    if (values.TryGetValue(AnnounceEquipment.Key, out v)) AnnounceEquipment.Load(v);
-                    if (values.TryGetValue(TimeEveryMinutes.Key, out v)) TimeEveryMinutes.Load(v);
-                    if (values.TryGetValue(ReadTutorials.Key, out v)) ReadTutorials.Load(v);
-                    if (values.TryGetValue(LogSpeech.Key, out v)) LogSpeech.Load(v);
-                    if (values.TryGetValue(CommandFile.Key, out v)) CommandFile.Load(v);
+                    foreach (ISetting s in all)
+                    {
+                        if (values.TryGetValue(s.Key, out string v)) s.Load(v);
+                    }
                 }
             }
             catch (Exception e)
@@ -106,7 +172,26 @@ namespace CWAccess
             }
             loading = false;
             Log.LogSpeech = LogSpeech.Value;
-            if (CommandFile.Value) UnityEngine.Application.runInBackground = true;
+            if (CommandFile.Value) RunInBackground();
+            Save();
+        }
+
+        /// <summary>Separate so that loading settings works outside Unity too (the tests).</summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static void RunInBackground()
+        {
+            UnityEngine.Application.runInBackground = true;
+        }
+
+        /// <summary>Every option back to its default (CommandFile, a developer switch, is kept).</summary>
+        public static void ResetAll()
+        {
+            bool cmd = CommandFile.Value;
+            loading = true;
+            foreach (ISetting s in all) s.Reset();
+            loading = false;
+            CommandFile.Load(cmd ? "True" : "False");
+            Log.LogSpeech = LogSpeech.Value;
             Save();
         }
 
@@ -116,28 +201,19 @@ namespace CWAccess
             try
             {
                 var sb = new StringBuilder();
-                sb.AppendLine("# Chainsaw Warrior Access settings. Also changeable in the game with F2.");
-                Append(sb, AnnounceActions);
-                Append(sb, AnnounceDice);
-                Append(sb, AnnounceStats);
-                Append(sb, AnnounceEquipment);
-                Append(sb, TimeEveryMinutes);
-                Append(sb, ReadTutorials);
-                Append(sb, LogSpeech);
-                Append(sb, CommandFile);
+                sb.AppendLine("# Chainsaw Warrior Access settings. All of them can be changed in the game with F2.");
+                foreach (ISetting s in all)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("# " + s.Description);
+                    sb.AppendLine(s.Key + " = " + s.Text);
+                }
                 File.WriteAllText(path, sb.ToString(), new UTF8Encoding(false));
             }
             catch (Exception e)
             {
                 Log.Error("Could not save settings: " + e.Message);
             }
-        }
-
-        private static void Append<T>(StringBuilder sb, Setting<T> s)
-        {
-            sb.AppendLine();
-            sb.AppendLine("# " + s.Description);
-            sb.AppendLine(s.Key + " = " + s.Text);
         }
     }
 }

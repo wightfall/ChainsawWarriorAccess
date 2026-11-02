@@ -82,6 +82,23 @@ namespace CWAccess
                 case "speech":
                     Speaker.Force(p.Length > 1 ? p[1] : string.Empty);
                     break;
+                case "dumptexts":
+                    {
+                        // Every text of the game's language table, for translators: key = text.
+                        var table = R.GetStatic<System.Collections.Generic.Dictionary<string, string>>(typeof(CLocalisationManager), "mpCurrentLanguage");
+                        var sb = new System.Text.StringBuilder();
+                        if (table != null) foreach (var kv in table) sb.Append(kv.Key).Append(" = ").Append(kv.Value.Replace("\r", "").Replace("\n", "\\n")).Append('\n');
+                        File.WriteAllText(Path.Combine(Entry.ModDir, "game-texts.txt"), sb.ToString(), new System.Text.UTF8Encoding(false));
+                        Log.Info("Wrote " + (table != null ? table.Count : 0) + " game texts");
+                        break;
+                    }
+                case "shot":
+                    // Developer: screenshot of the game window (used to write the comic descriptions).
+                    Application.CaptureScreenshot(Path.Combine(Entry.ModDir, (p.Length > 1 ? p[1] : "shot") + ".png"));
+                    break;
+                case "gametemplate":
+                    Log.Info("Wrote " + GameText.WriteTemplate(Entry.ModDir));
+                    break;
                 case "dumpgo":
                     Diagnostics.DumpObject(line.Substring(7));
                     break;

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- The game's DLLs are needed only on this computer; they are never part of the repository. -->
+    <GameManaged>$(ManagedDir)</GameManaged>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.6.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4" PrivateAssets="all" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CWAccess\CWAccess.csproj">
+      <SetTargetFramework>TargetFramework=net35</SetTargetFramework>
+      <Properties>DeployToGame=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\CWAccess.Installer\CWAccess.Installer.csproj" />
+    <ProjectReference Include="..\..\src\CWAccess.Boot\CWAccess.Boot.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath></Reference>
+    <Reference Include="0Harmony"><HintPath>..\..\lib\harmony\0Harmony.dll</HintPath></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+</Project>

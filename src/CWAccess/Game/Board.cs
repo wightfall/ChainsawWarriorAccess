@@ -35,7 +35,7 @@ namespace CWAccess.Game
             GameWatcher.MarkActionsAnnounced();
             // A message spoken a moment ago (the game just started or a dialog closed) is not repeated.
             bool fresh = Time.realtimeSinceStartup - MessageBoxPatch.LastTime < 2f;
-            return TextUtil.Join(fresh ? null : G.MessageText, ActionsSummary());
+            return TextUtil.Join(fresh || !Settings.RepeatMessageOnReturn.Value ? null : G.MessageText, ActionsSummary());
         }
 
         public override float RefreshInterval => 0.25f;

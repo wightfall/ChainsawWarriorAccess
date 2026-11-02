@@ -28,6 +28,7 @@ namespace CWAccess.Nav
         {
             open = new InfoPanel(title, items, startAtEnd);
             Speaker.Stop();
+            Audio.CuePlayer.Play(Audio.Cue.PanelOpen);
             Navigator.SetContext(open, announce: false);
             Navigator.AnnounceScreen(interrupt: true);
         }
@@ -36,6 +37,7 @@ namespace CWAccess.Nav
         {
             if (open == null) return;
             open = null;
+            Audio.CuePlayer.Play(Audio.Cue.PanelClose);
             Speaker.Say(Loc.Get("panel_closed"));
             ScreenTracker.ForceRefresh(announce: false);
             Navigator.SayFocused();

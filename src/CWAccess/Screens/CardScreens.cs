@@ -189,6 +189,7 @@ namespace CWAccess.Screens
                 if (refuse != null)
                 {
                     CSoundManager.PlaySFX("SFX_Fail");
+                    Audio.CuePlayer.Play(Audio.Cue.Unavailable);
                     Speaker.Say(Loc.Get(refuse));
                     return;
                 }
@@ -230,6 +231,7 @@ namespace CWAccess.Screens
                 EnableContinue(reveal, game.EquipmentPoints - screen.CurrentCost >= 2);
             }
             SetGlow<EquipmentCard>(root, c => c.mpStatsCard != null && selected.Contains(c.mpStatsCard.mpEquipment));
+            Audio.CuePlayer.Play(selected.Contains(e) ? Audio.Cue.Select : Audio.Cue.Deselect);
             Speaker.Say(TextUtil.Join(Loc.Get(selected.Contains(e) ? "state_selected" : "state_not_selected"), G.LabelText(R.Get<UILabel>(screen, "mpTextPoints"))));
         }
 
@@ -356,6 +358,7 @@ namespace CWAccess.Screens
                 R.Set(screen, "mpSelectedStats", null);
                 R.Set(screen, "mpSelected", null);
                 CSoundManager.PlaySFX("SFX_DeSelect");
+                Audio.CuePlayer.Play(Audio.Cue.Deselect);
                 if (requires) EnableContinue(cont, false);
                 SetGlow<EquipmentCard>(root, c => false);
                 Speaker.Say(Loc.Get("state_not_selected"));
@@ -367,6 +370,7 @@ namespace CWAccess.Screens
             R.Set(screen, "mpSelected", shown);
             SetGlow<EquipmentCard>(root, c => c.mpStatsCard == w);
             CSoundManager.PlaySFX("SFX_Select");
+            Audio.CuePlayer.Play(Audio.Cue.Select);
             if (requires) EnableContinue(cont, true);
             bool canContinue = cont != null && cont.activeInHierarchy;
             if (!quiet) Speaker.Say(TextUtil.Join(Loc.Get("state_selected"), canContinue ? Loc.Get("hint_continue") : null));

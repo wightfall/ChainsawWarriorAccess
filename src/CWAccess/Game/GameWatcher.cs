@@ -112,6 +112,9 @@ namespace CWAccess.Game
             if (except == "InitialMarksman") a.Marksman = b.Marksman;
             if (except == "Reflex") a.Reflex = b.Reflex;
             if (except == "EquipmentPoints") a.Points = b.Points;
+            if (b.Wounds < a.Wounds) Audio.CuePlayer.Play(Audio.Cue.Damage);
+            else if (b.Wounds > a.Wounds && a.WoundsMax == b.WoundsMax) Audio.CuePlayer.Play(Audio.Cue.Heal);
+            if (b.Poison > a.Poison || b.Radiation > a.Radiation) Audio.CuePlayer.Play(Audio.Cue.Contamination);
             if (a.Wounds != b.Wounds || a.WoundsMax != b.WoundsMax) parts.Add(Loc.Get("stat_wounds_change", b.Wounds, b.WoundsMax, Delta(b.Wounds - a.Wounds)));
             if (a.Endurance != b.Endurance) parts.Add(Loc.Get("stat_endurance_change", b.Endurance, Delta(b.Endurance - a.Endurance)));
             if (a.Poison != b.Poison) parts.Add(Loc.Get("stat_venom_change", b.Poison, b.Endurance, Delta(b.Poison - a.Poison)));
@@ -152,12 +155,17 @@ namespace CWAccess.Game
 
         private static void SayTime(int before, int after)
         {
+            if (before > 60 && after <= 60) Audio.CuePlayer.Play(Audio.Cue.Night);
             int every = Settings.TimeEveryMinutes.Value;
             if (every <= 0 || after >= before || after <= 0) return;
             // One tick is 30 seconds; 120 ticks are the full hour.
             int step = every * 2;
             // Rounded up, so reaching exactly 50:00 counts as passing the 50 minute mark.
-            if ((before + step - 1) / step != (after + step - 1) / step) Say(Status.TimeText(after));
+            if ((before + step - 1) / step != (after + step - 1) / step)
+            {
+                Audio.CuePlayer.Play(Audio.Cue.Time);
+                Say(Status.TimeText(after));
+            }
         }
 
         private static string Delta(int d)
@@ -187,7 +195,11 @@ namespace CWAccess.Game
                 if (!lastEquipment.TryGetValue(kv.Key, out string before))
                 {
                     // Copies of the same card are new objects when a game is loaded; only real gains count.
-                    if (!SameItemExisted(kv.Key)) parts.Add(Loc.Get("eq_gained", G.Text(kv.Key.mpEquipment.Name)));
+                    if (!SameItemExisted(kv.Key))
+                    {
+                        Audio.CuePlayer.Play(Audio.Cue.ItemGained);
+                        parts.Add(Loc.Get("eq_gained", G.Text(kv.Key.mpEquipment.Name)));
+                    }
                 }
                 else if (before != kv.Value && kv.Value.Length > 0)
                 {
@@ -196,7 +208,11 @@ namespace CWAccess.Game
             }
             foreach (WeaponInfo w in lastEquipment.Keys)
             {
-                if (!now.ContainsKey(w) && !SameItemNow(now, w)) parts.Add(Loc.Get("eq_lost", G.Text(w.mpEquipment.Name)));
+                if (!now.ContainsKey(w) && !SameItemNow(now, w))
+                {
+                    Audio.CuePlayer.Play(Audio.Cue.ItemLost);
+                    parts.Add(Loc.Get("eq_lost", G.Text(w.mpEquipment.Name)));
+                }
             }
             lastEquipment = now;
             if (parts.Count > 0) Say(TextUtil.Join(parts));
@@ -234,6 +250,7 @@ namespace CWAccess.Game
             // On other screens the board says the choices when it comes back.
             if (!(Nav.Navigator.Context is Board)) return;
             Board.OnActionsChanged();
+            Audio.CuePlayer.Play(Audio.Cue.Choices);
             if (!Settings.AnnounceActions.Value) return;
             Speaker.Queue(Board.ActionsSummary());
         }

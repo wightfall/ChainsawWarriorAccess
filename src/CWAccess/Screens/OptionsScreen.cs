@@ -35,7 +35,7 @@ namespace CWAccess.Screens
             if (screen.mpBack != null)
             {
                 GameObject back = screen.mpBack.gameObject;
-                items.Add(NavItem.Button("back", () => Loc.Get("role_button", UIScan.Fallback(LabelUnder(back), back)), () => ClickPatches.Click(back)));
+                items.Add(NavItem.Button("back", () => Loc.Role("role_button", UIScan.Fallback(LabelUnder(back), back)), () => ClickPatches.Click(back)));
             }
             items.RemoveAll(i => i == null);
             return items;
@@ -59,7 +59,7 @@ namespace CWAccess.Screens
             {
                 Key = key,
                 Go = slider.gameObject,
-                Text = () => Loc.Get("role_slider", name(), Mathf.RoundToInt(slider.sliderValue * 100f)),
+                Text = () => Loc.Role("role_slider", name(), Mathf.RoundToInt(slider.sliderValue * 100f)),
                 Adjust = dir =>
                 {
                     slider.sliderValue = Mathf.Clamp01(slider.sliderValue + dir * 0.05f);
@@ -78,7 +78,7 @@ namespace CWAccess.Screens
             {
                 Key = key,
                 Go = go,
-                Text = () => Loc.Get("role_checkbox", caption, Loc.Get(state() ? "state_on" : "state_off")),
+                Text = () => Loc.Role("role_checkbox", caption, Loc.Get(state() ? "state_on" : "state_off")),
                 Activate = () => ClickPatches.Click(go),
             };
         }

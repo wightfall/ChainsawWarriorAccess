@@ -24,6 +24,7 @@ namespace CWAccess.Nav
         /// <summary>Switches to a screen. Announces it unless quiet.</summary>
         public static void SetContext(ScreenContext ctx, bool announce = true)
         {
+            if (announce && ctx != null && !(ctx is InfoPanel)) Audio.CuePlayer.Play(Audio.Cue.Screen);
             if (context != null) context.OnLeave();
             context = ctx;
             items = new List<NavItem>();
@@ -147,10 +148,12 @@ namespace CWAccess.Nav
             if (next < 0 || next >= items.Count)
             {
                 // Stay at the edge and say the item again so the user knows where they are.
+                Audio.CuePlayer.Play(Audio.Cue.Edge);
                 Speaker.Say(Loc.Get(next < 0 ? "edge_top" : "edge_bottom") + " " + Focused.Speak());
                 return;
             }
             index = next;
+            Audio.CuePlayer.Play(Audio.Cue.Move);
             SayFocused();
         }
 
@@ -194,6 +197,7 @@ namespace CWAccess.Nav
             }
             if (f.Go != null && !UIScan.IsEnabled(f.Go))
             {
+                Audio.CuePlayer.Play(Audio.Cue.Unavailable);
                 Speaker.Say(Loc.Get("state_unavailable"));
                 return;
             }
@@ -201,7 +205,10 @@ namespace CWAccess.Nav
             ScreenContext before = context;
             watchKey = f.Key;
             watchText = f.Speak();
+            UICheckbox box = f.Go != null ? f.Go.GetComponent<UICheckbox>() : null;
+            if (box == null) Audio.CuePlayer.Play(Audio.Cue.Activate);
             f.Activate();
+            if (box != null) Audio.CuePlayer.Play(box.isChecked ? Audio.Cue.ToggleOn : Audio.Cue.ToggleOff);
             // If the item still exists and reads differently right after the press (checkbox state, a save
             // slot's name...), say it again so the result is heard.
             nextRefresh = Time.realtimeSinceStartup + 0.1f;

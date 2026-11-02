@@ -10,8 +10,15 @@ namespace CWAccess
         private static readonly Regex ColourCode = new Regex(@"\[(?:[0-9a-fA-F]{6}|-)\]");
         private static readonly Regex Spaces = new Regex(@"[ \t\r\n]+");
 
-        /// <summary>Removes colour codes and line breaks so a screen reader reads the text naturally.</summary>
+        /// <summary>Removes colour codes and line breaks, and speaks game texts in the mod's language when translated.</summary>
         public static string Clean(string text)
+        {
+            text = CleanRaw(text);
+            return text.Length == 0 ? text : Game.GameText.Speak(text);
+        }
+
+        /// <summary>Removes colour codes and line breaks so a screen reader reads the text naturally.</summary>
+        public static string CleanRaw(string text)
         {
             if (string.IsNullOrEmpty(text)) return string.Empty;
             text = ColourCode.Replace(text, string.Empty);

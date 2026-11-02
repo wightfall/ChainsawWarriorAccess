@@ -73,7 +73,7 @@ namespace CWAccess.Game
             string t = CLocalisationManager.GetText(key);
             // The game answers unknown keys with an error sentence.
             if (t == null || t.StartsWith("Cannot find Localication Text")) return string.Empty;
-            return TextUtil.Clean(t);
+            return TextUtil.CleanRaw(GameText.ForKey(key, t));
         }
 
         /// <summary>The four action buttons of the game board, in order, with their actions.</summary>

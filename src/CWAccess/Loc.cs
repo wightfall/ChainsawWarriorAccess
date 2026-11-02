@@ -6,8 +6,10 @@ using System.Text;
 namespace CWAccess
 {
     /// <summary>
-    /// The mod's own texts. English is built in; a file "strings.txt" next to the mod (lines "key=text",
-    /// "\n" for a line break) replaces any of them, so the mod can be translated without rebuilding it.
+    /// The mod's own texts. English is built in. Translations are language files in CWAccess\Languages (code.txt,
+    /// lines "key = text", see LanguageFile); the setting Language picks one ("auto" follows Windows / the game's
+    /// system language). A player's own CWAccess\strings.txt replaces single texts on top of that.
+    /// A translation whose {0} {1} placeholders differ from the English text is ignored (English is used).
     /// </summary>
     internal static class Loc
     {
@@ -55,8 +57,14 @@ namespace CWAccess
             ["screen_CardSelect"] = "Choose an enemy",
             ["screen_EndGame"] = "Game over",
             ["screen_Confirm"] = "Question",
-            ["comic_intro"] = "The story is told in pictures. Wait for each scene to finish, then press Enter on Next scene, or Escape to skip the comic.",
+            ["comic_intro"] = "The story is told in pictures, described here. Wait for each scene to finish, then press Enter on Next, or Escape to skip the comic. The first item of the list repeats the description.",
             ["comic_scene_done"] = "Scene {0} finished. Next scene available.",
+            ["comic_scene_title"] = "Scene {0} of 5: {1}",
+            ["comic_scene_1"] = "A ruined, futuristic New York under a sky full of smoke. In a dim room a battle-scarred veteran, our hero, sits slumped in a chair with a drink, watching a news report on a big wall screen. An officer in a peaked cap and dark green uniform steps through the door. Officer: Sir, the Colonel sent me. Hero: I'm not interested. Officer: He says you owe him a big favour. Hero, to himself: You don't have to remind me, not after all these years.",
+            ["comic_scene_2"] = "The hero remembers, in cold green flashback pictures. Closing months of the war. Enemy territory. Something went badly wrong. A soldier is blown off his feet by an explosion. I'd been injured before, but this time... A torn body lies on an operating table among machines. They rebuilt me. Made me... more than a man. A cybernetic body, wired and bolted. Took away my fear, just cut it out. Sent me back again and again... after all those impossible missions, I don't want to know. Back in the room, the officer: Stow it soldier! Where's Miller?",
+            ["comic_scene_3"] = "A command room full of machinery; the wall screen still shows the news. The Colonel, an older officer in desert camouflage and a cap, waits by a round armoured door. Colonel: Come on in soldier, long time no see! The hero's silhouette fills the doorway. Colonel: Ever heard of something called spatial warping? Hero: No, never. Colonel: Me neither, 'til yesterday. It's a state of physics. A gap opens up to... somewhere. A green, swirling vortex fills the screen. Colonel: Last night a major spatial warp appeared in downtown New York. We sent in a squad. Result: a dozen corpses. A soldier fires into green mist as tentacles reach for him. Corpse-like creatures, bizarre shape changers and rats everywhere! A soldier is torn apart in a spray of blood while a grinning, skinless ghoul looks on. We haven't recovered the bodies. OK, that's that. You've got some people to meet. Come on!",
+            ["comic_scene_4"] = "The Colonel introduces two men: a doctor in a white high-collared coat, dark glasses and swept-back orange hair, and a captain with his arm in a sling. Colonel: Meet our expert Doctor Marx, and Captain Johnson, who led the second squad. Johnson: Glad you could make it, sir. Colonel: Get kitted out while these guys brief you. Johnson: Do you believe in ghosts, soldier? Marx: What you call ghosts are beings from other dimensions, linking to ours through spatial warping! Such occurrences rarely let through more than one or two. Conditions here aren't suited to them and they soon die. On a map of Manhattan a red target closes in on the island. Marx: This time, they've come in force, directed by a greater power which provides energy and intelligence. The first squad reported facing a monstrous shadowy figure, a giant being of pure Darkness. The screen shows a towering shape of green and black smoke with glowing eyes and fangs. Johnson: This Darkness is emitting so much power, the whole of Manhattan will soon be swallowed into the warp. Marx: The really bad news is that this will happen in a little over an hour's time! A red countdown on the screen: 60 minutes, 44 seconds... 43...",
+            ["comic_scene_5"] = "While the two men talk, the hero gears up, panel by panel: a heavy pistol, a pump shotgun, a belt of shells. Johnson: When Washington got wind of this they wheeled in the big guns and set all this up. In a panic, they ordered the first raid, with the results you saw. Marx: After that they let us experts have our own way. Johnson: The boffins called in an air-strike, but as the jets were banking over Long Island we had to abort. Marx: Sensors indicate a very powerful radioactive source. One hit and... A radiation sign among skulls. Marx: Next, nerve gas was dropped. Captain Johnson led the second team in... Green gas over fallen soldiers. Johnson, his face bandaged: Ten men lost! I was lucky. I'll heal. A hand arms a grenade. The Colonel stands before a dark skyscraper with a few lit windows. Colonel: You're the only one who can stop Darkness now. We all trust you to do your very best. It'll be dark in about half an hour. Remember, you only have sixty minutes to save New York! A clock reads 60:00 beside a blood-spattered chainsaw.",
 
             // Named objects without a caption
             ["obj_Button_Pause"] = "Pause menu",
@@ -235,41 +243,254 @@ namespace CWAccess
             ["help_cards"] = "Up and Down arrows: move through the cards and buttons.\nWhen buying equipment: Enter or Space on a card buys it or puts it back; press Continue when done.\nWhen choosing one card (a weapon, an item, an enemy): Enter on a card chooses it at once; Space only selects it.\nI: everything printed on the card.\nLeft and Right arrows: previous or next kind of equipment, where the screen has tabs.\nP: points and items left.\nEscape: back without choosing.",
             ["help_board"] = "Up and Down arrows: move through message, choices, card, status and menus.\nEnter or Space: use the choice.\n1 to 4: use choice 1 to 4 directly.\nF: turn over the card.\nA: say the choices again.\nR: repeat the last message.\nC: describe the card.\nS: full status.\nW: wounds, endurance, venom and radiation.\nH: hand-to-hand, marksmanship, reflexes and skill.\nT: time left.\nN: which card of the deck this is.\nD: last dice roll.\nP: equipment points.\nE: list your equipment; Shift+E: open the equipment cards screen.\nL: game log.\nI: details of the focused item.\nEscape: pause menu.",
             ["help_panel"] = "Up and Down arrows: move through the list.\nI: details.\nEscape: close the list.",
-            ["help_global"] = "F1: this help.\nF2: mod settings.\nF5: say where you are.\nF12: find the screen reader again.\nControl: stop speech.",
+            ["help_global"] = "F1: keys of this screen.\nShift+F1: every key of the mod and the sound cues.\nF2: mod settings.\nF5: say where you are.\nF12: find the screen reader again.\nControl: stop speech.",
+            ["help_settings"] = "F2 opens the settings.\nUp and Down arrows: move through the settings.\nEnter: switch a setting on or off; on a sound cue, play it.\nLeft and Right arrows: change a number, a volume or the language.\nI: what a sound cue means.\nEscape: close; changes are saved at once.",
+
+            // Key list (Shift+F1)
+            ["panel_all_keys"] = "All keys and sound cues",
+            ["keys_section_global"] = "Keys everywhere:",
+            ["keys_section_menu"] = "Keys in menus and on screens:",
+            ["keys_section_board"] = "Keys on the game board:",
+            ["keys_section_cards"] = "Keys on card screens:",
+            ["keys_section_panel"] = "Keys in lists such as this one:",
+            ["keys_section_settings"] = "Keys in the settings:",
+            ["keys_section_cues"] = "Sound cues. Press Enter on one to hear it:",
+            ["cue_line"] = "{0}: {1}",
+
+            // Roles without the control type (setting SpeakRoles off)
+            ["role_button_plain"] = "{0}",
+            ["role_checkbox_plain"] = "{0}, {1}",
+            ["role_radio_plain"] = "{0}, {1}",
+            ["role_slider_plain"] = "{0}, {1} percent",
+            ["role_number_plain"] = "{0}, {1}",
+
+            // Settings
+            ["set_group_speech"] = "Speech",
+            ["set_group_sound"] = "Sound cues",
+            ["set_group_other"] = "Other",
+            ["set_language"] = "Language",
+            ["set_language_auto"] = "automatic, {0}",
+            ["set_roles"] = "Say the kind of control (button, slider)",
+            ["set_room"] = "Announce the room of each new card",
+            ["set_fullcard"] = "Read the whole card when it is turned over",
+            ["set_repeat"] = "Repeat the last message when back on the board",
+            ["set_comic"] = "Describe the intro comic pictures",
+            ["set_cues"] = "Sound cues",
+            ["set_cue_volume"] = "Sound cue volume",
+            ["set_cue_item"] = "{0} sound volume, {1}",
+            ["set_reset"] = "Reset all settings to their defaults",
+            ["set_reset_confirm"] = "Press Enter again to reset every setting.",
+            ["set_reset_done"] = "All settings are back to their defaults.",
+
+            // Sound cues: name and meaning
+            ["cue_Move"] = "Move",
+            ["cuedesc_Move"] = "the focus moved to another item",
+            ["cue_Edge"] = "Edge",
+            ["cuedesc_Edge"] = "the start or the end of a list",
+            ["cue_Activate"] = "Press",
+            ["cuedesc_Activate"] = "a button was pressed",
+            ["cue_Unavailable"] = "Unavailable",
+            ["cuedesc_Unavailable"] = "the button is unavailable, or the game refused (not enough points, only one gun)",
+            ["cue_ToggleOn"] = "Switched on",
+            ["cuedesc_ToggleOn"] = "a setting was switched on",
+            ["cue_ToggleOff"] = "Switched off",
+            ["cuedesc_ToggleOff"] = "a setting was switched off",
+            ["cue_Screen"] = "New screen",
+            ["cuedesc_Screen"] = "another screen or dialog opened",
+            ["cue_PanelOpen"] = "List opened",
+            ["cuedesc_PanelOpen"] = "a list such as help, equipment or the log opened",
+            ["cue_PanelClose"] = "List closed",
+            ["cuedesc_PanelClose"] = "the list closed",
+            ["cue_Choices"] = "Choices",
+            ["cuedesc_Choices"] = "new choices are available on the game board",
+            ["cue_Room"] = "New card",
+            ["cuedesc_Room"] = "a new house card lies face down",
+            ["cue_CardTurn"] = "Card turned",
+            ["cuedesc_CardTurn"] = "the house card was turned over",
+            ["cue_Enemy"] = "Enemy",
+            ["cuedesc_Enemy"] = "the card is an enemy",
+            ["cue_Trap"] = "Trap",
+            ["cuedesc_Trap"] = "the card is a trap",
+            ["cue_SafeRoom"] = "Safe room",
+            ["cuedesc_SafeRoom"] = "the card is not an enemy or a trap (clear room, first aid, dump, secret passage)",
+            ["cue_Dice"] = "Dice",
+            ["cuedesc_Dice"] = "dice were rolled",
+            ["cue_Damage"] = "Wounded",
+            ["cuedesc_Damage"] = "you lost wounds",
+            ["cue_Heal"] = "Healed",
+            ["cuedesc_Heal"] = "you got wounds back",
+            ["cue_Contamination"] = "Venom or radiation",
+            ["cuedesc_Contamination"] = "your venom or radiation went up",
+            ["cue_ItemGained"] = "Item gained",
+            ["cuedesc_ItemGained"] = "you got a new item of equipment",
+            ["cue_ItemLost"] = "Item lost",
+            ["cuedesc_ItemLost"] = "you lost an item of equipment",
+            ["cue_Select"] = "Card selected",
+            ["cuedesc_Select"] = "a card was selected",
+            ["cue_Deselect"] = "Card unselected",
+            ["cuedesc_Deselect"] = "a card was unselected",
+            ["cue_Time"] = "Clock",
+            ["cuedesc_Time"] = "another stretch of game time has passed (see the time setting)",
+            ["cue_Night"] = "Night",
+            ["cuedesc_Night"] = "night has fallen: 30 minutes are left",
         };
 
         private static readonly HashSet<string> reportedMissing = new HashSet<string>();
+        private static Dictionary<string, string> active = new Dictionary<string, string>();
+        private static Dictionary<string, string> custom = new Dictionary<string, string>();
+        private static string modDir;
 
-        public static void LoadOverrides(string dir)
+        /// <summary>Code of the language in use ("en", "th"...).</summary>
+        public static string Code { get; private set; } = "en";
+
+        /// <summary>Name of the language in use, as written in its file.</summary>
+        public static string LanguageName { get; private set; } = "English";
+
+        public sealed class Choice
         {
-            string path = Path.Combine(dir, "strings.txt");
-            if (!File.Exists(path)) return;
+            public string Code;
+            public string Name;
+        }
+
+        /// <summary>Loads the language chosen by the setting and the player's strings.txt.</summary>
+        public static void Init(string dir, string setting)
+        {
+            modDir = dir;
+            custom = ReadCustom(Path.Combine(dir, "strings.txt"));
+            Use(setting);
+        }
+
+        /// <summary>Switches language: "auto", "en" or a file code. Unknown codes fall back to English.</summary>
+        public static void Use(string setting)
+        {
+            string code = Resolve(setting);
+            active = new Dictionary<string, string>();
+            Code = "en";
+            LanguageName = "English";
+            if (code != "en" && modDir != null)
+            {
+                string path = Path.Combine(Path.Combine(modDir, "Languages"), code + ".txt");
+                try
+                {
+                    if (File.Exists(path))
+                    {
+                        LanguageFile f = LanguageFile.Load(path);
+                        foreach (KeyValuePair<string, string> kv in f.Entries)
+                        {
+                            if (kv.Value.Length == 0) continue;
+                            if (texts.TryGetValue(kv.Key, out string english) && !LanguageFile.PlaceholdersMatch(english, kv.Value))
+                            {
+                                Log.Warn("Translation ignored, its {placeholders} differ from English: " + kv.Key);
+                                continue;
+                            }
+                            active[kv.Key] = kv.Value;
+                        }
+                        Code = code;
+                        LanguageName = f.Name;
+                    }
+                    else
+                    {
+                        Log.Warn("Language file not found: " + path);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error("Could not read " + path + ": " + e.Message);
+                }
+            }
+            Log.Info("Language: " + LanguageName + " (" + Code + "), " + active.Count + " translated texts");
+            Game.GameText.Use(modDir, Code);
+        }
+
+        /// <summary>"auto" becomes the system language when the mod has a file for it, else English.</summary>
+        public static string Resolve(string setting)
+        {
+            if (string.IsNullOrEmpty(setting)) setting = "auto";
+            if (!string.Equals(setting, "auto", StringComparison.OrdinalIgnoreCase)) return setting.Trim();
+            string sys = SystemCode();
+            if (sys != "en" && modDir != null && File.Exists(Path.Combine(Path.Combine(modDir, "Languages"), sys + ".txt"))) return sys;
+            return "en";
+        }
+
+        /// <summary>The system language as a file code (Unity's Application.systemLanguage).</summary>
+        private static string SystemCode()
+        {
             try
             {
-                foreach (string raw in File.ReadAllLines(path, Encoding.UTF8))
+                switch (UnityEngine.Application.systemLanguage)
                 {
-                    string line = raw.Trim();
-                    if (line.Length == 0 || line.StartsWith("#")) continue;
-                    int eq = line.IndexOf('=');
-                    if (eq <= 0) continue;
-                    texts[line.Substring(0, eq).Trim()] = line.Substring(eq + 1).Replace("\\n", "\n");
+                    case UnityEngine.SystemLanguage.Thai: return "th";
+                    case UnityEngine.SystemLanguage.German: return "de";
+                    case UnityEngine.SystemLanguage.French: return "fr";
+                    case UnityEngine.SystemLanguage.Spanish: return "es";
+                    case UnityEngine.SystemLanguage.Italian: return "it";
+                    case UnityEngine.SystemLanguage.Portuguese: return "pt";
+                    case UnityEngine.SystemLanguage.Russian: return "ru";
+                    case UnityEngine.SystemLanguage.Polish: return "pl";
+                    case UnityEngine.SystemLanguage.Dutch: return "nl";
+                    case UnityEngine.SystemLanguage.Japanese: return "ja";
+                    case UnityEngine.SystemLanguage.Korean: return "ko";
+                    case UnityEngine.SystemLanguage.Chinese: return "zh";
+                    default: return "en";
                 }
-                Log.Info("Loaded texts from " + path);
+            }
+            catch (Exception)
+            {
+                return "en";
+            }
+        }
+
+        /// <summary>English and every language file in CWAccess\Languages.</summary>
+        public static List<Choice> Available()
+        {
+            var list = new List<Choice> { new Choice { Code = "en", Name = "English" } };
+            try
+            {
+                string dir = modDir != null ? Path.Combine(modDir, "Languages") : null;
+                if (dir != null && Directory.Exists(dir))
+                {
+                    foreach (string path in Directory.GetFiles(dir, "*.txt"))
+                    {
+                        string code = Path.GetFileNameWithoutExtension(path);
+                        if (code == "template" || code == "en") continue;
+                        list.Add(new Choice { Code = code, Name = LanguageFile.Load(path).Name });
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error("Could not list languages: " + e.Message);
+            }
+            return list;
+        }
+
+        private static Dictionary<string, string> ReadCustom(string path)
+        {
+            var d = new Dictionary<string, string>();
+            if (!File.Exists(path)) return d;
+            try
+            {
+                foreach (KeyValuePair<string, string> kv in LanguageFile.Load(path).Entries) d[kv.Key] = kv.Value;
+                Log.Info("Loaded " + d.Count + " texts from " + path);
             }
             catch (Exception e)
             {
                 Log.Error("Could not read " + path + ": " + e.Message);
             }
+            return d;
         }
 
         public static string TryGet(string key)
         {
-            return texts.TryGetValue(key, out string s) ? s : null;
+            if (custom.TryGetValue(key, out string s)) return s;
+            if (active.TryGetValue(key, out s)) return s;
+            return texts.TryGetValue(key, out s) ? s : null;
         }
 
         public static string Get(string key, params object[] args)
         {
-            if (!texts.TryGetValue(key, out string s))
+            string s = TryGet(key);
+            if (s == null)
             {
                 if (reportedMissing.Add(key)) Log.Warn("Missing text: " + key);
                 return args.Length == 0 ? key : key + " " + string.Join(" ", Array.ConvertAll(args, a => Convert.ToString(a)));
@@ -285,7 +506,30 @@ namespace CWAccess
             }
         }
 
-        /// <summary>All built-in texts, for writing a translation template.</summary>
+        /// <summary>A control's spoken text: "{name}, button" or just the name when control types are not spoken.</summary>
+        public static string Role(string roleKey, params object[] args)
+        {
+            if (!Settings.SpeakRoles.Value)
+            {
+                string plain = TryGet(roleKey + "_plain");
+                if (plain != null) return Format(plain, args);
+            }
+            return Get(roleKey, args);
+        }
+
+        private static string Format(string s, object[] args)
+        {
+            try
+            {
+                return string.Format(s, args);
+            }
+            catch (FormatException)
+            {
+                return s;
+            }
+        }
+
+        /// <summary>All built-in English texts, for the translation template and the tests.</summary>
         public static IEnumerable<KeyValuePair<string, string>> All => texts;
     }
 }

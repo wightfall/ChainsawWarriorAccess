@@ -24,7 +24,11 @@
       <ModFile Include="$(MSBuildThisFileDirectory)..\..\lib\nvda\nvdaControllerClient32.dll" />
       <ModFile Include="$(MSBuildThisFileDirectory)..\CWAccess.SpeechHost\bin\Release\net472\CWAccess.SpeechHost.exe" Condition="Exists('$(MSBuildThisFileDirectory)..\CWAccess.SpeechHost\bin\Release\net472\CWAccess.SpeechHost.exe')" />
     </ItemGroup>
+    <ItemGroup>
+      <LanguageFile Include="$(MSBuildThisFileDirectory)Languages\*.txt" />
+    </ItemGroup>
     <MakeDir Directories="$(GameDir)\CWAccess" />
     <Copy SourceFiles="@(ModFile)" DestinationFolder="$(GameDir)\CWAccess" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(LanguageFile)" DestinationFolder="$(GameDir)\CWAccess\Languages" SkipUnchangedFiles="true" />
   </Target>
 </Project>

@@ -1,34 +1,49 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using System.Reflection;
+using System.Windows.Forms;
 
 namespace CWAccess.Installer
 {
     /// <summary>
-    /// Installs or removes Chainsaw Warrior Access.
-    ///
-    /// Unity 4 games cannot use the usual mod loaders, so the setup adds one line to the start of the game's
-    /// CUIManager.Initialise (in your own copy of Assembly-CSharp.dll): a call to CWAccess.Boot, which loads the
-    /// mod from the CWAccess folder. The untouched file is kept as Assembly-CSharp.dll.cwaccess-original and put
-    /// back by --uninstall. If Steam updates or verifies the game, run the setup again.
-    ///
-    /// Usage: CWAccess-Setup.exe [game folder] [--uninstall] [--quiet]
+    /// Command line: [--install] [--uninstall] [--quiet] [--game "folder"] [--mod-language code] [--start-game].
+    /// --quiet works without a window: installs the built-in package (or uninstalls with --uninstall).
     /// </summary>
+    public sealed class Options
+    {
+        public bool InstallNow;
+        public bool Uninstall;
+        public bool Quiet;
+        public bool StartGame;
+        public string GameDir;
+        public string ModLanguage;
+
+        public static Options Parse(string[] args)
+        {
+            var o = new Options();
+            for (int i = 0; i < args.Length; i++)
+            {
+                string a = args[i].ToLowerInvariant();
+                // Windows style "/install" and "-install" mean the same as "--install".
+                if (a.StartsWith("/")) a = "--" + a.Substring(1);
+                else if (a.StartsWith("-") && !a.StartsWith("--") && a.Length > 2) a = "-" + a;
+                if (a == "--install") o.InstallNow = true;
+                else if (a == "--uninstall") o.Uninstall = true;
+                else if (a == "--quiet" || a == "--s" || a == "-s") o.Quiet = true;
+                else if (a == "--start-game") o.StartGame = true;
+                else if (a == "--game" && i + 1 < args.Length) o.GameDir = args[++i].Trim('"');
+                else if (a == "--mod-language" && i + 1 < args.Length) o.ModLanguage = args[++i].Trim('"');
+            }
+            return o;
+        }
+    }
+
     internal static class Program
     {
-        private const string GameExe = "CWSteamPC.exe";
-        private const string DataDir = "CWSteamPC_Data";
-        private const string BootDll = "CWAccess.Boot.dll";
-        private const string BackupSuffix = ".cwaccess-original";
-
-        private static bool quiet;
-
+        [STAThread]
         private static int Main(string[] args)
         {
+            // Mono.Cecil is embedded: the game's CWAccess folder holds an older Cecil that the mod's Harmony needs.
             AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
             {
                 if (!e.Name.StartsWith("Mono.Cecil,")) return null;
@@ -36,183 +51,67 @@ namespace CWAccess.Installer
                 {
                     var bytes = new byte[st.Length];
                     st.Read(bytes, 0, bytes.Length);
-                    return System.Reflection.Assembly.Load(bytes);
+                    return Assembly.Load(bytes);
                 }
             };
-            return Run(args);
-        }
-
-        private static int Run(string[] args)
-        {
-            quiet = args.Contains("--quiet");
-            bool uninstall = args.Contains("--uninstall");
-            string gameDir = args.FirstOrDefault(a => !a.StartsWith("--"));
+            Options options = Options.Parse(args);
+            if (options.Quiet) return Quiet(options);
             try
             {
-                gameDir = FindGame(gameDir);
-                if (gameDir == null)
+                string exeDir = Path.GetDirectoryName(Application.ExecutablePath);
+                string game = options.GameDir != null && ModInstaller.IsGameFolder(options.GameDir) ? options.GameDir : ModInstaller.FindGame(new[] { exeDir, Path.GetDirectoryName(exeDir) });
+                SetupText.Init(game);
+                if (options.ModLanguage != null) SetupText.Use(game, options.ModLanguage);
+            }
+            catch (Exception)
+            {
+                // English
+            }
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new MainForm(options));
+            return 0;
+        }
+
+        /// <summary>Exit codes: 0 done, 2 game not found, 3 game running, 4 no built-in package, 1 other error.</summary>
+        private static int Quiet(Options o)
+        {
+            try
+            {
+                string exeDir = Path.GetDirectoryName(Application.ExecutablePath);
+                string game = o.GameDir != null && ModInstaller.IsGameFolder(o.GameDir) ? o.GameDir : ModInstaller.FindGame(new[] { exeDir, Path.GetDirectoryName(exeDir) });
+                if (game == null) return 2;
+                if (ModInstaller.GameRunning()) return 3;
+                var inst = new ModInstaller(game);
+                if (o.Uninstall)
                 {
-                    Say("Chainsaw Warrior was not found. Run this setup from the CWAccess folder inside the game folder, or give the game folder as the first argument.");
-                    return Finish(2);
+                    inst.Uninstall(keepSettings: true, report: Console.WriteLine);
+                    return 0;
                 }
-                Say("Game folder: " + gameDir);
-                if (uninstall) Uninstall(gameDir);
-                else Install(gameDir);
-                return Finish(0);
+                Stream payload = Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip");
+                if (payload != null)
+                {
+                    using (payload) inst.Install(payload, Console.WriteLine);
+                    inst.InstallUpdaterCopy(Application.ExecutablePath);
+                }
+                else if (Directory.Exists(inst.ModDir))
+                {
+                    // Run from an extracted release zip: the files are already in place, only the loader is needed.
+                    inst.SetUpLoader(Console.WriteLine);
+                }
+                else
+                {
+                    return 4;
+                }
+                if (o.ModLanguage != null) inst.WriteLanguage(o.ModLanguage);
+                if (o.StartGame) ModInstaller.StartGame(pressPlay: true);
+                return 0;
             }
             catch (Exception e)
             {
-                Say("Setup failed: " + e.Message);
-                Say("Close the game if it is running and try again.");
-                return Finish(1);
+                Console.WriteLine(e.Message);
+                return 1;
             }
-        }
-
-        private static int Finish(int code)
-        {
-            if (!quiet)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Press Enter to close.");
-                Console.ReadLine();
-            }
-            return code;
-        }
-
-        private static void Say(string text)
-        {
-            Console.WriteLine(text);
-        }
-
-        private static string FindGame(string given)
-        {
-            var candidates = new List<string>();
-            if (!string.IsNullOrEmpty(given)) candidates.Add(given);
-            string here = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\', '/');
-            candidates.Add(here);
-            candidates.Add(Path.GetDirectoryName(here));
-            foreach (string lib in SteamLibraries()) candidates.Add(Path.Combine(lib, "steamapps", "common", "ChainsawWarrior"));
-            foreach (string c in candidates)
-            {
-                if (!string.IsNullOrEmpty(c) && File.Exists(Path.Combine(c, GameExe)) && Directory.Exists(Path.Combine(c, DataDir))) return Path.GetFullPath(c);
-            }
-            return null;
-        }
-
-        private static IEnumerable<string> SteamLibraries()
-        {
-            var roots = new List<string>
-            {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Steam"),
-            };
-            var result = new List<string>(roots);
-            foreach (string root in roots)
-            {
-                string vdf = Path.Combine(root, "steamapps", "libraryfolders.vdf");
-                if (!File.Exists(vdf)) continue;
-                foreach (Match m in Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s+\"([^\"]+)\""))
-                {
-                    result.Add(m.Groups[1].Value.Replace("\\\\", "\\"));
-                }
-            }
-            return result;
-        }
-
-        private static void Install(string gameDir)
-        {
-            string managed = Path.Combine(gameDir, DataDir, "Managed");
-            string modDir = Path.Combine(gameDir, "CWAccess");
-            string source = AppDomain.CurrentDomain.BaseDirectory;
-
-            // When the setup is not already in the game's CWAccess folder, copy the mod files there.
-            if (!SamePath(source, modDir))
-            {
-                Directory.CreateDirectory(modDir);
-                foreach (string f in Directory.GetFiles(source))
-                {
-                    File.Copy(f, Path.Combine(modDir, Path.GetFileName(f)), true);
-                }
-                Say("Copied the mod to " + modDir);
-            }
-
-            string bootSource = Path.Combine(modDir, BootDll);
-            if (!File.Exists(bootSource)) throw new FileNotFoundException(BootDll + " is missing from " + modDir);
-            File.Copy(bootSource, Path.Combine(managed, BootDll), true);
-
-            string target = Path.Combine(managed, "Assembly-CSharp.dll");
-            string backup = target + BackupSuffix;
-            if (IsPatched(target, managed))
-            {
-                Say("The game is already set up for the mod. Files updated.");
-                return;
-            }
-            // The file on disk is the game's own: keep it (again, in case Steam updated the game).
-            File.Copy(target, backup, true);
-            Patch(target, managed);
-            Say("Installed. Start the game: it will say \"Chainsaw Warrior Access loaded\".");
-        }
-
-        private static void Uninstall(string gameDir)
-        {
-            string managed = Path.Combine(gameDir, DataDir, "Managed");
-            string target = Path.Combine(managed, "Assembly-CSharp.dll");
-            string backup = target + BackupSuffix;
-            if (IsPatched(target, managed))
-            {
-                if (!File.Exists(backup)) throw new FileNotFoundException("The original Assembly-CSharp.dll backup is missing. Use Steam's \"Verify integrity of game files\" instead.");
-                File.Copy(backup, target, true);
-                Say("Restored the game's original Assembly-CSharp.dll.");
-            }
-            if (File.Exists(backup)) File.Delete(backup);
-            string boot = Path.Combine(managed, BootDll);
-            if (File.Exists(boot)) File.Delete(boot);
-            Say("Uninstalled. You can delete the CWAccess folder now.");
-        }
-
-        private static bool SamePath(string a, string b)
-        {
-            return string.Equals(Path.GetFullPath(a).TrimEnd('\\'), Path.GetFullPath(b).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static ReaderParameters Reader(string managed)
-        {
-            var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(managed);
-            return new ReaderParameters { AssemblyResolver = resolver, ReadingMode = ReadingMode.Immediate, InMemory = true };
-        }
-
-        private static MethodDefinition HookTarget(ModuleDefinition module)
-        {
-            TypeDefinition ui = module.GetType("CUIManager") ?? throw new InvalidOperationException("CUIManager not found: unknown game version.");
-            return ui.Methods.FirstOrDefault(m => m.Name == "Initialise" && m.IsStatic && m.Parameters.Count == 1)
-                   ?? throw new InvalidOperationException("CUIManager.Initialise not found: unknown game version.");
-        }
-
-        private static bool IsPatched(string target, string managed)
-        {
-            using (ModuleDefinition module = ModuleDefinition.ReadModule(target, Reader(managed)))
-            {
-                MethodDefinition m = HookTarget(module);
-                return m.Body.Instructions.Take(3).Any(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference r && r.DeclaringType.FullName == "CWAccess.Boot.Loader");
-            }
-        }
-
-        private static void Patch(string target, string managed)
-        {
-            string temp = target + ".cwaccess-new";
-            using (ModuleDefinition module = ModuleDefinition.ReadModule(target, Reader(managed)))
-            using (ModuleDefinition boot = ModuleDefinition.ReadModule(Path.Combine(managed, BootDll), Reader(managed)))
-            {
-                MethodDefinition start = boot.GetType("CWAccess.Boot.Loader").Methods.First(m => m.Name == "Start");
-                MethodReference call = module.ImportReference(start);
-                MethodDefinition hook = HookTarget(module);
-                ILProcessor il = hook.Body.GetILProcessor();
-                il.InsertBefore(hook.Body.Instructions[0], il.Create(OpCodes.Call, call));
-                module.Write(temp);
-            }
-            File.Copy(temp, target, true);
-            File.Delete(temp);
         }
     }
 }

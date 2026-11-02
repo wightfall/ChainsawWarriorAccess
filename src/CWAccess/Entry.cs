@@ -21,7 +21,7 @@ namespace CWAccess
             Log.Init(modDir);
             Log.Info("Chainsaw Warrior Access " + Version + " starting, Unity " + Application.unityVersion);
             Settings.Load(modDir);
-            Loc.LoadOverrides(modDir);
+            Loc.Init(modDir, Settings.Language.Value);
             Speaker.Initialize(modDir);
             try
             {
@@ -35,6 +35,7 @@ namespace CWAccess
             var go = new GameObject("CWAccess");
             UnityEngine.Object.DontDestroyOnLoad(go);
             go.AddComponent<ModBehaviour>();
+            Audio.CuePlayer.Init(go);
             Speaker.Queue(Loc.Get("mod_loaded"));
         }
     }

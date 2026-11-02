@@ -106,24 +106,59 @@ namespace CWAccess.Screens
         }
     }
 
-    /// <summary>The intro comic: says when a scene has finished and the Next button is there.</summary>
+    /// <summary>
+    /// The intro comic. Its pictures and speech bubbles are images, so the mod describes each scene (all captions and
+    /// dialogue included) when it starts, lists the description as the first item, and says when a scene has finished.
+    /// </summary>
     internal sealed class MotionComicScreen : GenericScreen
     {
         private bool nextWasShown;
         private float shownSince = -1f;
         private int scene = 1;
+        private string playing;
 
         public MotionComicScreen(GameObject root) : base("MotionComic", root)
         {
         }
 
+        private int CurrentScene
+        {
+            get
+            {
+                // "Scene 01" ... "Scene 05" in the game's comic screen.
+                string s = R.Get<string>(root.GetComponent<CMotionGraphicScreen>(), "mpCurrentScene") ?? "Scene 01";
+                int n;
+                return int.TryParse(s.Substring(s.Length - 2), out n) ? n : 1;
+            }
+        }
+
         public override string Intro()
         {
-            return Loc.Get("comic_intro");
+            playing = "Scene 01";
+            return Settings.DescribeComic.Value ? TextUtil.Join(Loc.Get("comic_intro"), Loc.Get("comic_scene_1")) : Loc.Get("comic_intro");
+        }
+
+        public override List<NavItem> Build()
+        {
+            List<NavItem> items = base.Build();
+            items.Insert(0, NavItem.Label("description", () => Loc.Get("comic_scene_title", CurrentScene, Loc.Get("comic_scene_" + CurrentScene))));
+            return items;
+        }
+
+        public override int InitialFocus(List<NavItem> items)
+        {
+            return items.Count > 1 ? 1 : 0;
         }
 
         public override void Tick()
         {
+            // A new scene started (the player pressed Next): describe it.
+            string now = R.Get<string>(root.GetComponent<CMotionGraphicScreen>(), "mpCurrentScene");
+            if (now != null && playing != null && now != playing)
+            {
+                playing = now;
+                if (Settings.DescribeComic.Value) Speaker.Queue(Loc.Get("comic_scene_" + CurrentScene));
+            }
             GameObject next = Board.FindChildNamed(root.transform, "Button_NextScene");
             bool active = next != null && next.activeInHierarchy;
             // The button flickers on for a frame before a scene starts; only count it when it stays.

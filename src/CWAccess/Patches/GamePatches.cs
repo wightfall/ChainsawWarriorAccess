@@ -43,6 +43,7 @@ namespace CWAccess.Patches
         {
             LastRoll = text;
             GameLog.Add(text);
+            Audio.CuePlayer.Play(Audio.Cue.Dice);
             if (Settings.AnnounceDice.Value) Speaker.Queue(text);
         }
 
@@ -143,9 +144,11 @@ namespace CWAccess.Patches
                 StatsCardBase card = __instance.mpHouseCard != null ? __instance.mpHouseCard.mpStatsCard : null;
                 if (card == null) return;
                 bool escapable = R.Get<bool>(__instance, "mbCardIsEscapeable");
-                string text = CardText.Full(card, escapable);
-                GameLog.Add(text);
-                Speaker.Queue(text);
+                Audio.CuePlayer.Play(Audio.Cue.CardTurn);
+                Audio.CuePlayer.Play(card.Class == "Enemy" ? Audio.Cue.Enemy : card.Class == "Trap" ? Audio.Cue.Trap : Audio.Cue.SafeRoom);
+                string full = CardText.Full(card, escapable);
+                GameLog.Add(full);
+                Speaker.Queue(Settings.FullCardOnTurn.Value ? full : CardText.Short(card));
             }
             catch (Exception e)
             {
@@ -166,7 +169,8 @@ namespace CWAccess.Patches
                 if (__instance.mpCurrentCard == null) return;
                 string text = CardText.Room(__instance.mpCurrentCard);
                 GameLog.Add(text);
-                Speaker.Queue(text);
+                Audio.CuePlayer.Play(Audio.Cue.Room);
+                if (Settings.AnnounceRoom.Value) Speaker.Queue(text);
             }
             catch (Exception e)
             {
@@ -186,7 +190,8 @@ namespace CWAccess.Patches
                 // Only the board's card, and only when the game swaps in a new opponent face up.
                 if (!G.InGame || __instance != G.Game.mpHouseCard || !bPrefabFlip || theCard == null) return;
                 if (G.Game.mpCurrentCard == theCard) return;
-                Speaker.Queue(CardText.Full(theCard, isEscapeable));
+                Audio.CuePlayer.Play(theCard.Class == "Enemy" ? Audio.Cue.Enemy : Audio.Cue.CardTurn);
+                Speaker.Queue(Settings.FullCardOnTurn.Value ? CardText.Full(theCard, isEscapeable) : CardText.Short(theCard));
             }
             catch (Exception e)
             {

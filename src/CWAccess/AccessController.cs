@@ -82,7 +82,8 @@ namespace CWAccess
             switch (key)
             {
                 case KeyCode.F1:
-                    ShowHelp(ctx);
+                    if (shift) KeyHelp.ShowAll(ctx);
+                    else KeyHelp.ShowScreen(ctx);
                     return;
                 case KeyCode.F2:
                     SettingsPanel.Open();
@@ -151,19 +152,6 @@ namespace CWAccess
             }
         }
 
-        private static void ShowHelp(ScreenContext ctx)
-        {
-            var items = new List<NavItem>();
-            string text = (ctx != null ? ctx.KeyHelp() : Loc.Get("help_menu")) + "\n" + Loc.Get("help_global");
-            int i = 0;
-            foreach (string line in text.Split('\n'))
-            {
-                string l = line.Trim();
-                if (l.Length == 0) continue;
-                items.Add(NavItem.Label("help" + (i++), () => l));
-            }
-            if (ctx is InfoPanel) InfoPanel.Close();
-            InfoPanel.Open(Loc.Get("panel_help"), items);
-        }
+
     }
 }

@@ -68,7 +68,7 @@ namespace CWAccess.Nav
                     Key = "slider:" + s.GetInstanceID(),
                     Go = s.gameObject,
                     Position = ScreenPos(s.transform),
-                    Text = () => Loc.Get("role_slider", Fallback(name, s.gameObject), Mathf.RoundToInt(s.sliderValue * 100f)),
+                    Text = () => Loc.Role("role_slider", Fallback(name, s.gameObject), Mathf.RoundToInt(s.sliderValue * 100f)),
                     Adjust = dir => AdjustSlider(s, dir),
                 });
             }
@@ -98,12 +98,12 @@ namespace CWAccess.Nav
                 };
                 if (checkbox != null && !opt.PlainButtons.Contains(go.name))
                 {
-                    item.Text = () => Loc.Get(checkbox.radioButtonRoot != null && !checkbox.optionCanBeNone && IsRadio(checkbox) ? "role_radio" : "role_checkbox",
+                    item.Text = () => Loc.Role(checkbox.radioButtonRoot != null && !checkbox.optionCanBeNone && IsRadio(checkbox) ? "role_radio" : "role_checkbox",
                         LiveLabel(target, own), Loc.Get(checkbox.isChecked ? "state_on" : "state_off")) + Disabled(target);
                 }
                 else
                 {
-                    item.Text = () => Loc.Get("role_button", LiveLabel(target, own)) + Disabled(target);
+                    item.Text = () => Loc.Role("role_button", LiveLabel(target, own)) + Disabled(target);
                 }
                 if (descriptions.TryGetValue(go.name, out UILabel desc))
                 {
