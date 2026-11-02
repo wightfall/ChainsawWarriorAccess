@@ -292,11 +292,11 @@ namespace CWAccess.Game
                     }
                     else
                     {
-                        InfoPanel.Open(Loc.Get("panel_equipment"), EquipmentList());
+                        InfoPanel.Open(() => Loc.Get("panel_equipment"), EquipmentList());
                     }
                     return true;
                 case KeyCode.L:
-                    InfoPanel.Open(Loc.Get("panel_log"), LogList(), startAtEnd: true);
+                    InfoPanel.Open(() => Loc.Get("panel_log"), LogList(), startAtEnd: true);
                     return true;
             }
             return false;

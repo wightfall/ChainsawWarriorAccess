@@ -16,10 +16,11 @@ namespace CWAccess
 
         public static void Open()
         {
-            InfoPanel.Open(Loc.Get("panel_settings"), Build());
+            InfoPanel.Open(() => Loc.Get("panel_settings"), Build());
         }
 
-        private static List<NavItem> Build()
+        /// <summary>The items; every text is looked up when spoken, so a language change shows at once.</summary>
+        internal static List<NavItem> Build()
         {
             var items = new List<NavItem>
             {
@@ -45,9 +46,9 @@ namespace CWAccess
                 Cue cue = c;
                 Setting<int> s = Settings.CueVolumes[c];
                 NavItem item = Number("cue_" + c, s, 0, 100, 10, cue);
-                string name = CueName(cue);
-                item.Text = () => Loc.Get("set_cue_item", name, s.Value);
-                item.Details = () => Loc.TryGet("cuedesc_" + cue) ?? name;
+                // The cue's name is looked up each time: it must follow a change of language made in this list.
+                item.Text = () => Loc.Get("set_cue_item", CueName(cue), s.Value);
+                item.Details = () => Loc.TryGet("cuedesc_" + cue) ?? CueName(cue);
                 items.Add(item);
             }
             items.Add(Heading("set_group_other"));

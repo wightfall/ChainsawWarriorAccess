@@ -136,14 +136,29 @@ and unselected, the clock, and nightfall. Shift+F1 lists them all; Enter on one 
 
 ## Languages
 
-The mod and its setup come in **English** and **Thai** (ภาษาไทย). Language files are `CWAccess\Languages\<code>.txt`:
-lines `key = text`, a `# Language: Name` header, and a `[setup]` section for the setup program. To add a language,
-copy `th.txt`, translate the texts (keep `{0}`, `{1}` as they are) and choose it with F2. A personal
-`CWAccess\strings.txt` in the same format replaces single texts.
+Everything is spoken in **English** or **Thai** (ภาษาไทย): the mod, its setup, and the game's own texts (menus,
+choices, every card, equipment, traps, messages, tutorials, endings, achievements). Choose the language with **F2**
+(automatic follows the Windows display language when the mod has it). The game's English stays on screen, because
+its fonts have no other alphabets; only the speech changes.
 
-The game's own texts (card texts, messages) are spoken as the game shows them, in English. They can be translated for
-speech with `CWAccess\Languages\game\<code>.txt` (`[keys]` with the game's text keys, `[texts]` for texts shown on screen);
-the game's English texts stay on screen because its fonts have no other alphabets.
+**Changes take effect at once:** while a language is in use, saving its file (or `strings.txt`) reloads it in the game
+within 2 seconds, and the game says "Language file reloaded". No restart is needed to try a translation.
+
+### Translating
+
+Two kinds of files, both plain text (`key = text`, `\n` for a line break, `#` for comments, `# Language: Name` header):
+
+- **The mod and its setup:** `CWAccess\Languages\<code>.txt`. Start from **`Languages\template.txt`** (every English
+  text of the mod, and the setup's texts under `[setup]`): copy it to `de.txt`, `es.txt`..., translate the right side,
+  keep `{0}`, `{1}` as they are (a translation with different braces is ignored and English is used).
+- **The game's own texts:** `CWAccess\Languages\game\<code>.txt`, with `[keys]` (the game's text keys) and `[texts]`
+  (texts on screen that are not in the game's text table). Start from **`Languages\game\template.txt`**: the mod writes
+  it on your computer from the game itself (the game's texts are not shipped with the mod), and adds the texts of each
+  screen as you visit it. Keep `%words` such as `%name`: the game fills them in. Filled-in parts that are known texts
+  (an enemy's name, the deck number) are translated too.
+
+A personal `CWAccess\strings.txt` in the mod's format replaces single texts of any language and is kept by updates
+(the shipped language files are replaced by updates).
 
 ## Building from source
 
@@ -161,9 +176,24 @@ If the game is not in the default Steam folder: `.\tools\package.ps1 -GameDir "D
 file-infecting virus before you publish.
 
 While developing, `dotnet build src\CWAccess\CWAccess.csproj` copies the mod straight into the game's `CWAccess` folder
-(close the game first). For automated testing, `CommandFile = true` in `CWAccess.ini` makes the mod read commands
-from `CWAccess\commands.txt` (one per line, e.g. `key DownArrow`, `key E shift`, `dump`, `state`) and keep running
-in the background.
+(close the game first).
+
+For testing, `CommandFile = true` in `CWAccess.ini` makes the mod read commands from `CWAccess\commands.txt` (one per
+line) and keep running in the background. Besides keys (`key DownArrow`, `key E shift`) there are commands that set up
+rare situations, so every part of the game can be checked without waiting for it to come up:
+
+| Command | Effect |
+|---------|--------|
+| `card Agent09` | put that house card on top of the deck while a card lies face down (`dumpcards` lists them) |
+| `give Laser` | add an equipment card (part of its name) |
+| `stat mnWounds 3` | set a player value (`mnExitRounds`, `mnBypassRounds`, `mnCurrentTime` ...) |
+| `skill ST_Climbing` | change the skill |
+| `gamestate GS_ResponceLucky` | jump to a game state (lucky shot, losing equipment ...) |
+| `screen SteamError` | show a screen of the current scene |
+| `endscreen lose_venom` | show the game-over screen without ending the game (no scores or Steam stats) |
+| `dump`, `state`, `dumptexts`, `dumplabels`, `gametemplate` | write the screen, state, texts or template to the log / mod folder |
+
+Switch `CommandFile` off again afterwards.
 
 Projects:
 
@@ -171,9 +201,11 @@ Projects:
 - `src/CWAccess.Boot` - the tiny loader the game calls; loads the mod and logs any failure.
 - `src/CWAccess.Installer` - `CWAccess-Setup.exe`: installer and updater (Windows Forms, Mono.Cecil).
 - `src/CWAccess.SpeechHost` - speech through JAWS or SAPI for players without NVDA.
-- `tests/CWAccess.Tests` - unit tests: language files and the Thai translation, settings, sound cues, the installer
-  (a real install, update and uninstall on a copy of the game's DLL), and checks that every part of the game the mod
-  reaches by name still exists.
+- `tests/CWAccess.Tests` - unit tests: language files, the Thai translations of the mod, setup and game texts, the
+  translation of the game's texts (whole texts and texts with filled-in parts), live reloading, the templates, settings
+  and their language, sound cues, the installer (a real install, update and uninstall on a copy of the game's DLL),
+  and checks that every part of the game the mod reaches by name still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
+  `Languages\template.txt` after adding texts.
 
 This repository contains no code or assets of the game.
 

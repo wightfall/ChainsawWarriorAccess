@@ -24,6 +24,7 @@ namespace CWAccess
     ///   give name                    add an equipment card (part of its name) to the player
     ///   stat field value             set a PlayerStats field (mnWounds, mnPoison, mnCurrentTime ...)
     ///   skill ST_Climbing            change the player's skill
+    ///   gamestate GS_ResponceLucky   set the game's state (rare branches)
     ///   screen name                  switch to a screen of the scene (SteamError, LoadScreen ...)
     ///   gametemplate                 rewrite Languages\game\template.txt
     ///   shot name                    screenshot
@@ -151,6 +152,10 @@ namespace CWAccess
                         Log.Info("Set " + p[1] + " = " + p[2]);
                         break;
                     }
+                case "gamestate":
+                    // Testing rare branches (lucky shot after a tied round ...): sets the game's state directly.
+                    if (G.InGame) G.Game.GameState = (EGameState)Enum.Parse(typeof(EGameState), p[1], true);
+                    break;
                 case "skill":
                     if (G.InGame) G.Game.Skill = (ESkillType)Enum.Parse(typeof(ESkillType), p[1], true);
                     break;

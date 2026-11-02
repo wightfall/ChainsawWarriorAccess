@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 
+// Several tests switch the mod's language and the game's text table, which are static: run them one at a time.
+[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
+
 namespace CWAccess.Tests
 {
     internal static class TestPaths

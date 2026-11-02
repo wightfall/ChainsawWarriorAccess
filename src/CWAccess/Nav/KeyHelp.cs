@@ -14,7 +14,7 @@ namespace CWAccess.Nav
             ScreenContext screen = Navigator.Context;
             string text = (screen != null ? screen.KeyHelp() : Loc.Get("help_menu")) + "\n" + Loc.Get("help_global");
             List<NavItem> items = Lines(text, "help");
-            InfoPanel.Open(Loc.Get("panel_help"), items);
+            InfoPanel.Open(() => Loc.Get("panel_help"), items);
             // Say the whole help at once; Up and Down still go line by line.
             var all = new List<string>();
             for (int i = 1; i < items.Count; i++) all.Add(items[i].Speak());
@@ -41,7 +41,7 @@ namespace CWAccess.Nav
                     Activate = () => CuePlayer.Preview(cue),
                 });
             }
-            InfoPanel.Open(Loc.Get("panel_all_keys"), items);
+            InfoPanel.Open(() => Loc.Get("panel_all_keys"), items);
         }
 
         private static List<NavItem> Lines(string text, string prefix)

@@ -11,20 +11,29 @@ namespace CWAccess.Nav
     internal sealed class InfoPanel : ScreenContext
     {
         private static InfoPanel open;
-        private readonly string title;
+        private static int opened;
+        private readonly System.Func<string> title;
         private readonly List<NavItem> items;
         private readonly bool startAtEnd;
+        private readonly int number;
 
-        private InfoPanel(string title, List<NavItem> items, bool startAtEnd)
+        private InfoPanel(System.Func<string> title, List<NavItem> items, bool startAtEnd)
         {
             this.title = title;
             this.items = items;
             this.startAtEnd = startAtEnd;
+            number = ++opened;
         }
 
         public static InfoPanel Current => open;
 
         public static void Open(string title, List<NavItem> items, bool startAtEnd = false)
+        {
+            Open(() => title, items, startAtEnd);
+        }
+
+        /// <summary>A panel whose title is looked up each time it is spoken (it follows a language change).</summary>
+        public static void Open(System.Func<string> title, List<NavItem> items, bool startAtEnd = false)
         {
             open = new InfoPanel(title, items, startAtEnd);
             Speaker.Stop();
@@ -43,11 +52,11 @@ namespace CWAccess.Nav
             Navigator.SayFocused();
         }
 
-        public override string Id => "panel:" + title;
+        public override string Id => "panel:" + number;
 
         public override string Title()
         {
-            return Loc.Get("panel_title", title, items.Count);
+            return Loc.Get("panel_title", title(), items.Count);
         }
 
         public override List<NavItem> Build()

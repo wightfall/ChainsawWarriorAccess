@@ -312,6 +312,36 @@ namespace CWAccess.Screens
             return TextUtil.Join(info, cards.Count == 0 ? Loc.Get("cards_none") : cards.Count == 1 ? Loc.Get("cards_count_one") : Loc.Get("cards_count", cards.Count));
         }
 
+        private string shownCards;
+
+        public override void OnEnter()
+        {
+            shownCards = CardsSignature();
+        }
+
+        /// <summary>Which cards the list holds (the game can swap them while the screen stays open).</summary>
+        private string CardsSignature()
+        {
+            var names = new List<string>();
+            foreach (WeaponInfo w in Cards) names.Add(w.mpEquipment.Name);
+            return string.Join("|", names.ToArray());
+        }
+
+        /// <summary>
+        /// The game reuses this screen for a second question without leaving it (after choosing C.A.T.S it asks for
+        /// the weapon to attach it to): when the cards change, start again at the first card and say the new question.
+        /// </summary>
+        public override void Tick()
+        {
+            string now = CardsSignature();
+            if (now == shownCards) return;
+            shownCards = now;
+            Navigator.Rebuild(keepFocus: false);
+            Navigator.FocusIndex(InitialFocus(new List<NavItem>(Navigator.Items)), speak: false);
+            NavItem f = Navigator.Focused;
+            Speaker.Queue(TextUtil.Join(Intro(), f != null && f.Key.StartsWith("card") ? f.Speak() : null));
+        }
+
         public override List<NavItem> Build()
         {
             var items = new List<NavItem> { NavItem.Label("info", () => G.LabelText(R.Get<UILabel>(screen, "mpTextInfo"))) };
