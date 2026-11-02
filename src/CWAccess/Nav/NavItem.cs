@@ -27,6 +27,9 @@ namespace CWAccess.Nav
         /// <summary>A checkbox or radio button: Enter switches it (said by F1).</summary>
         public bool IsSwitch;
 
+        /// <summary>The group the item belongs to, for Page Up / Page Down (null: none).</summary>
+        public string Group;
+
         /// <summary>For sorting by screen position (screen pixels, y grows upwards).</summary>
         public Vector2 Position;
 

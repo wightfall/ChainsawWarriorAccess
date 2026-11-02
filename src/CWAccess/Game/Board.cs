@@ -79,7 +79,16 @@ namespace CWAccess.Game
                 items.Add(new NavItem { Key = "equipment", Go = eq, Text = () => Loc.Get("item_equipment_screen") + UIScan.Disabled(eq), Activate = () => ClickPatches.Click(eq) });
             }
             items.Add(NavItem.Button("pause", () => Loc.Get("item_pause"), OpenPause));
+            // Page Up / Page Down: message, choices, card, status, then the buttons.
+            foreach (NavItem item in items) item.Group = PartOf(item.Key);
             return items;
+        }
+
+        private static string PartOf(string key)
+        {
+            if (key == "message" || key == "card" || key == "status") return key;
+            if (key == "turn" || key.StartsWith("action")) return "choices";
+            return "buttons";
         }
 
         public override void OnEnter()

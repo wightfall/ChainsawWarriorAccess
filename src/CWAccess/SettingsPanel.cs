@@ -59,6 +59,8 @@ namespace CWAccess
                 Text = () => Loc.Get("set_reset"),
                 Activate = Reset,
             });
+            // Page Up / Page Down go from heading to heading.
+            Paging.GroupByHeadings(items, i => i.Key != null && i.Key.StartsWith("set_group_"));
             return items;
         }
 
@@ -77,6 +79,7 @@ namespace CWAccess
             return new NavItem
             {
                 Key = key,
+                IsSwitch = true,
                 Text = () => Loc.Role("role_checkbox", Loc.Get(key), Loc.Get(entry.Value ? "state_on" : "state_off")),
                 Activate = () =>
                 {

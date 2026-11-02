@@ -12,6 +12,7 @@ namespace CWAccess
         private static readonly KeyCode[] Watched =
         {
             KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.Home, KeyCode.End,
+            KeyCode.PageUp, KeyCode.PageDown,
             KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Space, KeyCode.Escape, KeyCode.Backspace, KeyCode.Tab,
             KeyCode.F1, KeyCode.F2, KeyCode.F5, KeyCode.F12, KeyCode.I,
             KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4,
@@ -121,6 +122,12 @@ namespace CWAccess
                     return;
                 case KeyCode.End:
                     Navigator.End();
+                    return;
+                case KeyCode.PageUp:
+                    Navigator.Page(-1);
+                    return;
+                case KeyCode.PageDown:
+                    Navigator.Page(1);
                     return;
                 case KeyCode.Return:
                 case KeyCode.KeypadEnter:

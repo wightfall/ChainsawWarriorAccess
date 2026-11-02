@@ -21,9 +21,20 @@ namespace CWAccess.Nav
         {
             var lines = new List<string>();
             if (ctx != null) lines.AddRange(ctx.HelpLines(items ?? new List<NavItem>()));
+            // Page Up / Page Down where the list has groups or is long, after the line about moving.
+            string page = PageLine(items);
+            if (page != null && lines.Count > 0 && !lines.Contains(page)) lines.Insert(1, page);
             if (lines.Count == 0) lines.Add(Loc.Get("keys_nothing"));
             if (ctx == null || !ctx.IsKeyList) lines.Add(Loc.Get("keys_more"));
             return TextUtil.Join(lines);
+        }
+
+        /// <summary>What Page Up / Page Down do in these items, or null when they do nothing useful.</summary>
+        internal static string PageLine(IList<NavItem> items)
+        {
+            if (Paging.HasGroups(items)) return Loc.Get("keys_page_groups");
+            if (items != null && items.Count > Paging.PageSize) return Loc.Get("keys_page_items", Paging.PageSize);
+            return null;
         }
 
         /// <summary>The keys of a list of items: moving, pressing, switching, changing, details and letters.</summary>
@@ -73,24 +84,36 @@ namespace CWAccess.Nav
         public static void ShowAll(ScreenContext ctx)
         {
             if (ctx is InfoPanel) InfoPanel.Close();
+            InfoPanel.Open(() => Loc.Get("panel_all_keys"), AllKeysItems(), help: "help_panel_keys");
+        }
+
+        /// <summary>The Shift+F1 list: the keys by section, then the sound cues. Each section is a Page Up / Page Down group.</summary>
+        internal static List<NavItem> AllKeysItems()
+        {
             var items = new List<NavItem>();
             foreach (string section in new[] { "global", "menu", "board", "cards", "panel", "settings" })
             {
-                items.Add(NavItem.Label("h_" + section, () => Loc.Get("keys_section_" + section)));
-                items.AddRange(LineItems(Loc.Get("help_" + section), section));
+                string s = section;
+                items.Add(new NavItem { Key = "h_" + s, Text = () => Loc.Get("keys_section_" + s), Group = s });
+                foreach (NavItem line in LineItems(Loc.Get("help_" + s), s))
+                {
+                    line.Group = s;
+                    items.Add(line);
+                }
             }
-            items.Add(NavItem.Label("h_cues", () => Loc.Get("keys_section_cues")));
+            items.Add(new NavItem { Key = "h_cues", Text = () => Loc.Get("keys_section_cues"), Group = "cues" });
             foreach (Cue c in Enum.GetValues(typeof(Cue)))
             {
                 Cue cue = c;
                 items.Add(new NavItem
                 {
                     Key = "cue" + c,
+                    Group = "cues",
                     Text = () => Loc.Get("cue_line", SettingsPanel.CueName(cue), Loc.TryGet("cuedesc_" + cue) ?? string.Empty),
                     Activate = () => CuePlayer.Preview(cue),
                 });
             }
-            InfoPanel.Open(() => Loc.Get("panel_all_keys"), items, help: "help_panel_keys");
+            return items;
         }
 
         private static List<NavItem> LineItems(string text, string prefix)

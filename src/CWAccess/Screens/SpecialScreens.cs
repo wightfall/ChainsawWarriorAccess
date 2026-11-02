@@ -74,6 +74,8 @@ namespace CWAccess.Screens
             }
             items.AddRange(list);
             UIScan.SortReadingOrder(items);
+            // Page Up / Page Down: past the achievements to the buttons and back.
+            foreach (NavItem item in items) item.Group = item.Key != null && item.Key.StartsWith("ach") ? "achievements" : "screen";
             return items;
         }
 

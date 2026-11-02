@@ -21,6 +21,9 @@ namespace CWAccess.Screens
         /// <summary>What F1 says Escape does while one of the back buttons shows.</summary>
         protected string backHelp = "keys_back";
 
+        /// <summary>Items under objects whose names start with this form Page Up / Page Down groups (the help pages).</summary>
+        protected string groupPrefix;
+
         /// <summary>Start on the first item (texts included) instead of the first button.</summary>
         protected bool focusFirstItem;
 
@@ -31,6 +34,9 @@ namespace CWAccess.Screens
             switch (name)
             {
                 case "Help":
+                    focusFirstItem = true;
+                    groupPrefix = "Page_";
+                    break;
                 case "Credits":
                 case "Achievement":
                 case "EndGame":
@@ -58,7 +64,27 @@ namespace CWAccess.Screens
 
         public override List<NavItem> Build()
         {
-            return UIScan.Scan(root, options);
+            List<NavItem> items = UIScan.Scan(root, options);
+            if (groupPrefix != null) GroupByAncestor(items, groupPrefix);
+            return items;
+        }
+
+        /// <summary>Each item goes into the group of the object above it whose name starts with prefix.</summary>
+        private static void GroupByAncestor(List<NavItem> items, string prefix)
+        {
+            foreach (NavItem item in items)
+            {
+                string group = "screen";
+                for (Transform t = item.Go != null ? item.Go.transform : null; t != null; t = t.parent)
+                {
+                    if (t.name.StartsWith(prefix))
+                    {
+                        group = t.name;
+                        break;
+                    }
+                }
+                item.Group = group;
+            }
         }
 
         public override int InitialFocus(List<NavItem> items)

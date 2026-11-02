@@ -167,6 +167,26 @@ namespace CWAccess.Nav
             FocusIndex(items.Count - 1);
         }
 
+        /// <summary>Page Up / Page Down: the previous or next group of items; ten items in a long list without groups.</summary>
+        public static void Page(int dir)
+        {
+            if (items.Count == 0)
+            {
+                Speaker.Say(Loc.Get("nothing_here"));
+                return;
+            }
+            int next = Paging.Target(items, index, dir);
+            if (next < 0)
+            {
+                Audio.CuePlayer.Play(Audio.Cue.Edge);
+                Speaker.Say(Loc.Get(dir < 0 ? "edge_top" : "edge_bottom") + " " + Focused.Speak());
+                return;
+            }
+            index = next;
+            Audio.CuePlayer.Play(Audio.Cue.Move);
+            SayFocused();
+        }
+
         /// <summary>Jump to the next item whose text starts with the letter.</summary>
         public static bool TypeAhead(char c)
         {

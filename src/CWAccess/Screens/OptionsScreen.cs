@@ -78,6 +78,7 @@ namespace CWAccess.Screens
             {
                 Key = key,
                 Go = go,
+                IsSwitch = true,
                 Text = () => Loc.Role("role_checkbox", caption, Loc.Get(state() ? "state_on" : "state_off")),
                 Activate = () => ClickPatches.Click(go),
             };

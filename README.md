@@ -58,6 +58,7 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 |-----|--------|
 | Up / Down arrows, Tab / Shift+Tab | Move through the items of the screen |
 | Home / End | First / last item |
+| Page Up / Page Down | Previous / next group of items (the sections of the Shift+F1 list and of the settings, the parts of the board, the cards and buttons of card screens); in a long list without groups such as the game log, 10 items |
 | Enter | Press the button, choose the card |
 | Space | Press the button; on card pickers only select the card |
 | Left / Right arrows | Change a slider or setting; switch the equipment tab |

@@ -63,6 +63,17 @@ namespace CWAccess.Screens
             return i != null && i.Key != null && i.Key.StartsWith("card");
         }
 
+        /// <summary>Page Up / Page Down groups: the information, the cards, the kinds of equipment, the buttons.</summary>
+        protected static List<NavItem> WithGroups(List<NavItem> items)
+        {
+            foreach (NavItem i in items)
+            {
+                if (i == null || i.Key == null) continue;
+                i.Group = IsCard(i) ? "cards" : i.Key.StartsWith("tab") ? "tabs" : i.Key == "info" ? "info" : "buttons";
+            }
+            return items;
+        }
+
         /// <summary>Equipment kinds in the order of the game's tabs.</summary>
         protected static readonly string[] TabCodes = { "C", "D", "G", "H", "W", "S" };
 
@@ -164,7 +175,7 @@ namespace CWAccess.Screens
             }
             if (!R.Get<bool>(screen, "mbLockToggle")) items.AddRange(TabItems(Tabs, CurrentCode));
             items.AddRange(base.Build());
-            return items;
+            return WithGroups(items);
         }
 
         private string CardLabel(StatsEquipmentBase e, int n, int total)
@@ -393,7 +404,7 @@ namespace CWAccess.Screens
             }
             if (!R.Get<bool>(screen, "mbLockToggle")) items.AddRange(TabItems(Tabs, CurrentCode));
             items.AddRange(base.Build());
-            return items;
+            return WithGroups(items);
         }
 
         /// <summary>Enter on a card: select it and press Continue (when the screen has one).</summary>
@@ -480,7 +491,7 @@ namespace CWAccess.Screens
                 });
             }
             items.AddRange(base.Build());
-            return items;
+            return WithGroups(items);
         }
 
         /// <summary>Enter on an enemy: fight this one.</summary>
