@@ -50,6 +50,12 @@ namespace CWAccess.Installer
 
         public string UpdaterPath => Path.Combine(ModDir, SetupName);
 
+        /// <summary>The program doing the install; tests set it to act as the setup running from the game folder.</summary>
+        public string RunningProgram { get; set; } = Process.GetCurrentProcess().MainModule.FileName;
+
+        /// <summary>True once the running setup was renamed out of the way (Windows keeps the old name for it).</summary>
+        private bool runningMoved;
+
         public static bool IsGameFolder(string dir)
         {
             return !string.IsNullOrEmpty(dir) && File.Exists(Path.Combine(dir, GameExe)) && Directory.Exists(Path.Combine(dir, DataDir));
@@ -96,7 +102,7 @@ namespace CWAccess.Installer
             report = report ?? (s => { });
             Directory.CreateDirectory(ModDir);
             int files = 0;
-            string running = Process.GetCurrentProcess().MainModule.FileName;
+            string running = RunningProgram;
             using (var zip = new ZipArchive(package, ZipArchiveMode.Read))
             {
                 foreach (ZipArchiveEntry e in zip.Entries)
@@ -109,7 +115,7 @@ namespace CWAccess.Installer
                     if (!dest.StartsWith(Path.GetFullPath(ModDir) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) continue;
                     if (Keep.Contains(Path.GetFileName(dest)) && File.Exists(dest)) continue;
                     Directory.CreateDirectory(Path.GetDirectoryName(dest));
-                    if (string.Equals(dest, running, StringComparison.OrdinalIgnoreCase)) MoveAside(dest);
+                    if (!runningMoved && string.Equals(dest, running, StringComparison.OrdinalIgnoreCase)) MoveAside(dest);
                     e.ExtractToFile(dest, true);
                     files++;
                 }
@@ -143,18 +149,60 @@ namespace CWAccess.Installer
             Directory.CreateDirectory(ModDir);
             if (!string.Equals(Path.GetFullPath(setupExe), Path.GetFullPath(UpdaterPath), StringComparison.OrdinalIgnoreCase))
             {
-                if (File.Exists(UpdaterPath) && string.Equals(Process.GetCurrentProcess().MainModule.FileName, UpdaterPath, StringComparison.OrdinalIgnoreCase)) MoveAside(UpdaterPath);
+                // Renamed once only: after that the file there is a copy that can be replaced.
+                if (!runningMoved && File.Exists(UpdaterPath) && string.Equals(RunningProgram, UpdaterPath, StringComparison.OrdinalIgnoreCase)) MoveAside(UpdaterPath);
                 File.Copy(setupExe, UpdaterPath, true);
             }
             return UpdaterPath;
         }
 
-        /// <summary>A running program cannot be overwritten but can be renamed; the .old copy is removed next start.</summary>
-        private static void MoveAside(string path)
+        /// <summary>A running program cannot be overwritten or deleted but can be renamed; the copy is removed next start.</summary>
+        private void MoveAside(string path)
         {
             string old = path + ".old";
-            if (File.Exists(old)) File.Delete(old);
+            try
+            {
+                if (File.Exists(old)) File.Delete(old);
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                // An earlier setup still runs from there: use another name.
+                old = path + "." + DateTime.Now.Ticks + ".old";
+            }
             File.Move(path, old);
+            runningMoved = true;
+        }
+
+        /// <summary>Deletes the renamed copies of earlier setups next to the given program (those still running stay).</summary>
+        public static void RemoveOldCopies(string program)
+        {
+            string dir = Path.GetDirectoryName(program);
+            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) return;
+            foreach (string f in Directory.GetFiles(dir, Path.GetFileName(program) + ".*old"))
+            {
+                if (!f.EndsWith(".old", StringComparison.OrdinalIgnoreCase)) continue;
+                try
+                {
+                    File.Delete(f);
+                }
+                catch (Exception)
+                {
+                    // Still running; removed next time.
+                }
+            }
+        }
+
+        /// <summary>Writes the setup program at the top of a release zip to a temporary file; null when there is none.</summary>
+        public static string ExtractSetup(string zipPath)
+        {
+            using (ZipArchive zip = ZipFile.OpenRead(zipPath))
+            {
+                ZipArchiveEntry e = zip.GetEntry(SetupName);
+                if (e == null) return null;
+                string temp = Path.Combine(Path.GetTempPath(), "CWAccess-Setup-" + Guid.NewGuid().ToString("N") + ".exe");
+                e.ExtractToFile(temp);
+                return temp;
+            }
         }
 
         /// <summary>Puts the game's original file back and removes the mod (its settings too when keepSettings is false).</summary>
@@ -172,7 +220,7 @@ namespace CWAccess.Installer
             if (File.Exists(boot)) File.Delete(boot);
             if (Directory.Exists(ModDir))
             {
-                string running = Process.GetCurrentProcess().MainModule.FileName;
+                string running = RunningProgram;
                 foreach (string f in Directory.GetFiles(ModDir, "*", SearchOption.AllDirectories))
                 {
                     string name = Path.GetFileName(f);

@@ -181,15 +181,7 @@ namespace CWAccess.Installer
 
         private async Task StartAsync()
         {
-            try
-            {
-                string old = Application.ExecutablePath + ".old";
-                if (File.Exists(old)) File.Delete(old);
-            }
-            catch (Exception)
-            {
-                // Still in use; removed next time.
-            }
+            ModInstaller.RemoveOldCopies(Application.ExecutablePath);
             gameDir = FindGameFolder();
             FillLanguages();
             events.Focus();
@@ -307,6 +299,18 @@ namespace CWAccess.Installer
                         try
                         {
                             tempSetup = await github.DownloadAsync(setup, null);
+                        }
+                        catch (Exception)
+                        {
+                            tempSetup = null;
+                        }
+                    }
+                    if (tempSetup == null)
+                    {
+                        // The setup is also at the top of the zip.
+                        try
+                        {
+                            tempSetup = ModInstaller.ExtractSetup(tempZip);
                         }
                         catch (Exception)
                         {

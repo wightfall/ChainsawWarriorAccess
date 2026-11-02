@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -177,6 +178,91 @@ namespace CWAccess.Tests
             Assert.False(File.Exists(Path.Combine(game, "Other", "file.txt")));
         }
 
+        // The update that 0.1.0 and 0.2.0 could not finish: the setup in the game folder downloads a release, the
+        // zip replaces CWAccess-Setup.exe (the running setup is renamed to .old), then the downloaded setup is copied
+        // there too. The second copy renamed the file again and failed deleting the running .old copy.
+        [Fact]
+        public void TheSetupInTheGameFolderUpdatesItself()
+        {
+            var inst = new ModInstaller(game);
+            Process running = RunningCopy.StartAt(inst.UpdaterPath);
+            try
+            {
+                inst.RunningProgram = inst.UpdaterPath;
+                inst.Install(Package(new KeyValuePair<string, string>("CWAccess/CWAccess-Setup.exe", "setup from the zip")), null);
+                Assert.Equal("setup from the zip", File.ReadAllText(inst.UpdaterPath));
+                string downloaded = Path.Combine(game, "CWAccess-Setup-v9.exe");
+                File.WriteAllText(downloaded, "downloaded setup");
+                inst.InstallUpdaterCopy(downloaded);
+                Assert.Equal("downloaded setup", File.ReadAllText(inst.UpdaterPath));
+                Assert.True(File.Exists(inst.UpdaterPath + ".old"));
+            }
+            finally
+            {
+                RunningCopy.Stop(running);
+            }
+            RunningCopy.RemoveOldCopies(inst.UpdaterPath);
+            Assert.False(File.Exists(inst.UpdaterPath + ".old"));
+        }
+
+        [Fact]
+        public void AnEarlierSetupStillRunningDoesNotStopAnUpdate()
+        {
+            var inst = new ModInstaller(game);
+            Process earlier = RunningCopy.StartAt(inst.UpdaterPath + ".old");
+            Process running = RunningCopy.StartAt(inst.UpdaterPath);
+            try
+            {
+                inst.RunningProgram = inst.UpdaterPath;
+                ModInstaller.RemoveOldCopies(inst.UpdaterPath);
+                Assert.True(File.Exists(inst.UpdaterPath + ".old"));
+                string downloaded = Path.Combine(game, "CWAccess-Setup-v9.exe");
+                File.WriteAllText(downloaded, "downloaded setup");
+                inst.InstallUpdaterCopy(downloaded);
+                Assert.Equal("downloaded setup", File.ReadAllText(inst.UpdaterPath));
+                Assert.Equal(2, Directory.GetFiles(inst.ModDir, "*.old").Length);
+            }
+            finally
+            {
+                RunningCopy.Stop(running);
+                RunningCopy.Stop(earlier);
+            }
+            RunningCopy.RemoveOldCopies(inst.UpdaterPath);
+            Assert.Empty(Directory.GetFiles(inst.ModDir, "*.old"));
+        }
+
+        [Fact]
+        public void TheSetupAtTheTopOfTheZipIsNotCopiedIntoTheMod()
+        {
+            var inst = new ModInstaller(game);
+            string zipPath = Path.Combine(game, "release.zip");
+            using (MemoryStream ms = Package(new KeyValuePair<string, string>("CWAccess-Setup.exe", "setup at the top")))
+            {
+                File.WriteAllBytes(zipPath, ms.ToArray());
+            }
+            using (Stream zip = File.OpenRead(zipPath))
+            {
+                inst.Install(zip, null);
+            }
+            Assert.False(File.Exists(inst.UpdaterPath));
+            Assert.False(File.Exists(Path.Combine(game, "CWAccess-Setup.exe")));
+            string setup = ModInstaller.ExtractSetup(zipPath);
+            try
+            {
+                Assert.Equal("setup at the top", File.ReadAllText(setup));
+            }
+            finally
+            {
+                File.Delete(setup);
+            }
+            File.Delete(zipPath);
+            using (MemoryStream ms = Package())
+            {
+                File.WriteAllBytes(zipPath, ms.ToArray());
+            }
+            Assert.Null(ModInstaller.ExtractSetup(zipPath));
+        }
+
         [Fact]
         public void WritesAndReadsTheModLanguage()
         {
@@ -216,6 +302,57 @@ namespace CWAccess.Tests
             inst.Install(Package(), null);
             File.Delete(inst.BackupPath);
             Assert.Throws<FileNotFoundException>(() => inst.Uninstall(true, null));
+        }
+    }
+
+    /// <summary>
+    /// Runs a small program from a given file, as Windows runs the setup: while it runs, the file can be renamed but
+    /// not deleted or overwritten.
+    /// </summary>
+    internal static class RunningCopy
+    {
+        private static string program;
+
+        public static Process StartAt(string path)
+        {
+            if (program == null)
+            {
+                string exe = Path.Combine(TestPaths.NewTempDir(), "wait.exe");
+                using (var csc = new Microsoft.CSharp.CSharpCodeProvider())
+                {
+                    var options = new System.CodeDom.Compiler.CompilerParameters { GenerateExecutable = true, OutputAssembly = exe };
+                    var result = csc.CompileAssemblyFromSource(options, "class P { static void Main() { System.Threading.Thread.Sleep(120000); } }");
+                    Assert.False(result.Errors.HasErrors, result.Errors.Count > 0 ? result.Errors[0].ToString() : null);
+                }
+                program = exe;
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.Copy(program, path, true);
+            return Process.Start(new ProcessStartInfo(path) { CreateNoWindow = true, UseShellExecute = false });
+        }
+
+        /// <summary>Windows and virus scanners can hold the file of a stopped program for a moment.</summary>
+        public static void RemoveOldCopies(string updater)
+        {
+            for (int i = 0; i < 50; i++)
+            {
+                ModInstaller.RemoveOldCopies(updater);
+                if (Directory.GetFiles(Path.GetDirectoryName(updater), "*.old").Length == 0) return;
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        public static void Stop(Process p)
+        {
+            try
+            {
+                if (!p.HasExited) p.Kill();
+                p.WaitForExit(10000);
+            }
+            catch (InvalidOperationException)
+            {
+                // Already gone.
+            }
         }
     }
 

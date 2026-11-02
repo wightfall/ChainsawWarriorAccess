@@ -17,7 +17,8 @@ Download from the [Releases](https://github.com/wightfall/ChainsawWarriorAccess/
   the **Setup language** box; tick **Use this language for the mod in the game** to make the mod speak it too, and
   **Start Chainsaw Warrior when setup finishes** to have the game started, with Play pressed in its settings window.
 - or **`ChainsawWarriorAccess-vX.Y.Z.zip`**: extract it into the game folder, usually
-  `C:\Program Files (x86)\Steam\steamapps\common\ChainsawWarrior`, then run `CWAccess\CWAccess-Setup.exe`.
+  `C:\Program Files (x86)\Steam\steamapps\common\ChainsawWarrior`, then run `CWAccess-Setup.exe` there. It keeps a
+  copy of itself in the `CWAccess` folder for updates, so the one in the game folder can be deleted afterwards.
 
 When you start the game from Steam, a small window called **Chainsaw Warrior Configuration** appears first
 (screen resolution). Press **Enter**: that is its **Play!** button. A few seconds later the game says
