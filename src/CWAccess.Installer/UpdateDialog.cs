@@ -12,7 +12,7 @@ namespace CWAccess.Installer
     {
         private readonly Label question = new Label();
         private readonly Label notesLabel = new Label();
-        private readonly ListBox notes = new ListBox();
+        private readonly StatusBox notes = new StatusBox();
         private readonly Button yes = new Button();
         private readonly Button no = new Button();
 
@@ -36,11 +36,10 @@ namespace CWAccess.Installer
 
             notes.SetBounds(12, 88, 616, 300);
             notes.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            notes.HorizontalScrollbar = true;
             notes.AccessibleName = SetupText.T("upd_notes", "What's new");
             List<string> lines = ReleaseNotes.Lines(releaseNotes);
             if (lines.Count == 0) lines.Add(SetupText.T("upd_no_notes", "This release has no notes."));
-            foreach (string l in lines) notes.Items.Add(l);
+            notes.SetLines(lines);
 
             yes.Text = SetupText.T("yes", "&Yes");
             yes.DialogResult = DialogResult.Yes;
@@ -63,7 +62,7 @@ namespace CWAccess.Installer
             Shown += (s, e) =>
             {
                 notes.Focus();
-                if (notes.Items.Count > 0) notes.SelectedIndex = 0;
+                notes.ToTop();
             };
         }
 

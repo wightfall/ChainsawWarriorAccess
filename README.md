@@ -12,8 +12,9 @@ Braille displays get the same text through NVDA.
 
 Download from the [Releases](https://github.com/wightfall/ChainsawWarriorAccess/releases) page, either:
 
-- **`CWAccess-Setup-vX.Y.Z.exe`** (easiest): run it. It finds the game, shows what it will do in an **Events** list
-  (one line per event, the newest selected), and installs with **Install or update**. Choose the setup's language in
+- **`CWAccess-Setup-vX.Y.Z.exe`** (easiest): run it. It finds the game, shows what it does in the **Events** box
+  (a read-only text box, one line per event, the newest last; the cursor stays on the first line, so read it with the
+  arrow keys from the top), and installs with **Install or update**. Choose the setup's language in
   the **Setup language** box; tick **Use this language for the mod in the game** to make the mod speak it too, and
   **Start Chainsaw Warrior when setup finishes** to have the game started, with Play pressed in its settings window.
 - or **`ChainsawWarriorAccess-vX.Y.Z.zip`**: extract it into the game folder, usually
@@ -27,7 +28,8 @@ When you start the game from Steam, a small window called **Chainsaw Warrior Con
 ### Updates
 
 The setup is copied to `CWAccess\CWAccess-Setup.exe` in the game folder. Run it any time: it checks GitHub, and when a
-newer version exists it shows **What's new** (a list you can read line by line) before the **Yes** and **No** buttons.
+newer version exists it shows **What's new** (a read-only text box you read line by line with the arrow keys, the cursor starting on its
+first line) before the **Yes** and **No** buttons.
 If Steam updates the game or you use "Verify integrity of game files", run the setup again.
 
 ### Uninstalling
@@ -230,7 +232,7 @@ Projects:
   and their language, sound cues, the F1 keys of each kind of screen, Page Up / Page Down groups, the cached lookups of
   the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, an
   explanation for every kind of choice the game has, the names of achievements, the installer (a real install, update
-  and uninstall on a copy of the game's DLL, and the setup replacing itself while it runs from the game folder), and
+  and uninstall on a copy of the game's DLL, the setup replacing itself while it runs from the game folder, and its read-only events and What's new boxes), and
   checks that every part of the game the mod reaches by name still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
   `Languages\template.txt` after adding texts and puts every language file back into its groups.
 

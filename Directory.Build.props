@@ -6,7 +6,7 @@
     <BepInExDir>$(GameDir)\BepInEx</BepInExDir>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
-    <Version>0.3.3</Version>
+    <Version>0.3.4</Version>
     <Authors>CWAccess contributors</Authors>
     <Deterministic>true</Deterministic>
   </PropertyGroup>

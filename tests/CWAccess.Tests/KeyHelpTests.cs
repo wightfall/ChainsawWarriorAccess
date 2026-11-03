@@ -21,7 +21,7 @@ namespace CWAccess.Tests
 
         private sealed class TestScreen : ScreenContext
         {
-            public string Back;
+            public string BackText;
             public bool KeyList;
 
             public override string Id => "test";
@@ -40,7 +40,7 @@ namespace CWAccess.Tests
 
             public override string BackHelp()
             {
-                return Back;
+                return BackText;
             }
         }
 
@@ -48,7 +48,7 @@ namespace CWAccess.Tests
         public void AMenuSaysMovingPressingLettersAndBack()
         {
             var items = new List<NavItem> { Button("New game"), Button("Load game"), Button("Options"), Button("Quit") };
-            var menu = new TestScreen { Back = Loc.Get("keys_back") };
+            var menu = new TestScreen { BackText = Loc.Get("keys_back") };
             Assert.Equal(new[] { Loc.Get("keys_move"), Loc.Get("keys_press"), Loc.Get("keys_letters"), Loc.Get("keys_back") }, menu.HelpLines(items));
         }
 
@@ -75,7 +75,7 @@ namespace CWAccess.Tests
         public void TheF1TextEndsWithShiftF1AndHoldsNoOtherScreensKeys()
         {
             var items = new List<NavItem> { Button("Yes"), Button("No") };
-            string text = KeyHelp.ScreenText(new TestScreen { Back = Loc.Get("keys_back_no") }, items);
+            string text = KeyHelp.ScreenText(new TestScreen { BackText = Loc.Get("keys_back_no") }, items);
             Assert.Contains(Loc.Get("keys_back_no"), text);
             Assert.EndsWith(Loc.Get("keys_more"), text);
             // Nothing of the board, the card screens or the keys that work everywhere.

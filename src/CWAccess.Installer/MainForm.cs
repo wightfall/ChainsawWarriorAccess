@@ -20,7 +20,7 @@ namespace CWAccess.Installer
         private readonly CheckBox useLanguageCheck = new CheckBox();
         private readonly CheckBox startGameCheck = new CheckBox();
         private readonly Label eventsLabel = new Label();
-        private readonly ListBox events = new ListBox();
+        private readonly StatusBox events = new StatusBox();
         private readonly ProgressBar progress = new ProgressBar();
         private readonly Button installButton = new Button();
         private readonly Button checkButton = new Button();
@@ -67,7 +67,6 @@ namespace CWAccess.Installer
             eventsLabel.Location = new Point(12, 116);
             events.SetBounds(12, 140, 656, 250);
             events.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            events.HorizontalScrollbar = true;
 
             progress.SetBounds(12, 396, 656, 18);
             progress.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
@@ -127,7 +126,7 @@ namespace CWAccess.Installer
 
         // ------------------------------------------------------------------ events list
 
-        /// <summary>Adds a line to the events list and selects it, so a screen reader in the list reads it at once.</summary>
+        /// <summary>Adds a line to the events box (newest last); the cursor stays on its first line.</summary>
         private void Event(string text)
         {
             if (InvokeRequired)
@@ -135,8 +134,7 @@ namespace CWAccess.Installer
                 BeginInvoke(new Action<string>(Event), text);
                 return;
             }
-            events.Items.Add(text);
-            events.SelectedIndex = events.Items.Count - 1;
+            events.AppendLine(text);
         }
 
         private void UpdateButtons()
@@ -185,6 +183,7 @@ namespace CWAccess.Installer
             gameDir = FindGameFolder();
             FillLanguages();
             events.Focus();
+            events.ToTop();
             DescribeState();
             UpdateButtons();
             if (options.InstallNow)
