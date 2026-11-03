@@ -262,6 +262,7 @@ namespace CWAccess
             // Key list (Shift+F1)
             ["panel_all_keys"] = "All keys and sound cues",
             ["achievement_unlocked"] = "Achievement unlocked: {0}. {1}",
+            ["achievement_progress"] = "Achievement progress: {0}, {1} of {2}.",
             ["steam_achievements"] = "Steam achievements: {0} of {1} unlocked",
             ["actionhelp_AT_Ranged"] = "Shoot with a gun or the Laser Lance: first a Reflexes roll to fire before the enemy reaches you, then 2 dice to hit; the score needed is on the weapon card.",
             ["actionhelp_AT_Melee"] = "Fight hand-to-hand: each round both sides roll 2 dice and add their hand-to-hand; the loser of a round takes wounds.",

@@ -50,7 +50,8 @@ namespace CWAccess.Patches
     /// <summary>
     /// Steam reports every achievement it stores; with no progress numbers that means it has just been unlocked. This
     /// catches the achievements Steam unlocks by itself from statistics (kill counts, damage taken, endings seen), which
-    /// never pass through the game: they are said as soon as Steam has stored them.
+    /// never pass through the game: they are said as soon as Steam has stored them. A report with numbers is the
+    /// progress Steam shows in a pop-up ("Zombie Zapper 50/200"), and is said too.
     /// </summary>
     [HarmonyPatch(typeof(StatsAndAchievementsSteam), "UserAchievementStored")]
     internal static class AchievementStoredPatch
@@ -60,8 +61,11 @@ namespace CWAccess.Patches
             try
             {
                 if (callbackResult.m_nGameID != SteamUtils.GetAppID().m_AppId) return;
-                if (!Achievements.IsUnlock(callbackResult.m_nCurProgress, callbackResult.m_nMaxProgress)) return;
-                Achievements.Announce(callbackResult.m_rgchAchievementName, "Steam");
+                string id = callbackResult.m_rgchAchievementName;
+                uint current = callbackResult.m_nCurProgress, max = callbackResult.m_nMaxProgress;
+                Log.Info("Steam stored achievement " + id + " (" + current + " of " + max + ")");
+                if (Achievements.IsUnlock(current, max)) Achievements.Announce(id, "Steam");
+                else if (max > 0) Speaker.Queue(Achievements.Progress(id, current, max));
             }
             catch (Exception e)
             {
@@ -94,13 +98,27 @@ namespace CWAccess.Patches
             Speaker.Queue(Unlocked(id));
         }
 
+        /// <summary>"Achievement progress: name, 50 of 200."</summary>
+        public static string Progress(string id, uint current, uint max)
+        {
+            Title(id, out string name, out string desc);
+            return Loc.Get("achievement_progress", name, current, max);
+        }
+
         /// <summary>
         /// "Achievement unlocked: title. description": the name and description Steam shows in its pop-up, else the
         /// game's own list (most of its entries have no title), else a readable form of the id.
         /// </summary>
         public static string Unlocked(string id)
         {
-            string name = null, desc = null;
+            Title(id, out string name, out string desc);
+            return TextUtil.Join(Loc.Get("achievement_unlocked", name, desc ?? string.Empty).TrimEnd(' ', '.') + ".");
+        }
+
+        private static void Title(string id, out string name, out string desc)
+        {
+            name = null;
+            desc = null;
             try
             {
                 if (SteamManager.Initialized)
@@ -124,7 +142,6 @@ namespace CWAccess.Patches
                 }
             }
             if (string.IsNullOrEmpty(name)) name = NameOf(id);
-            return TextUtil.Join(Loc.Get("achievement_unlocked", name, desc ?? string.Empty).TrimEnd(' ', '.') + ".");
         }
 
         /// <summary>

@@ -92,6 +92,7 @@ namespace CWAccess.Nav
                 var item = new NavItem
                 {
                     Key = "ctl:" + go.GetInstanceID(),
+                    ScreenText = () => ScreenLabel(target),
                     Go = go,
                     Position = ScreenPos(col),
                     Activate = () => ClickPatches.Click(target),
@@ -127,6 +128,7 @@ namespace CWAccess.Nav
                     items.Add(new NavItem
                     {
                         Key = "txt:" + l.GetInstanceID(),
+                        ScreenText = () => TextUtil.CleanRaw(l.text),
                         Go = l.gameObject,
                         Position = ScreenPos(l.transform),
                         Text = () => TextUtil.Clean(l.text),
@@ -218,6 +220,18 @@ namespace CWAccess.Nav
             }
             string s = sb.Length > 0 ? sb.ToString() : atScan;
             return Fallback(s, go);
+        }
+
+        /// <summary>A control's text as it is on screen, untranslated (for jumping by letter).</summary>
+        private static string ScreenLabel(GameObject go)
+        {
+            foreach (UILabel l in go.GetComponentsInChildren<UILabel>())
+            {
+                if (!Visible(l)) continue;
+                string t = TextUtil.CleanRaw(l.text);
+                if (t.Length > 0) return t;
+            }
+            return TextUtil.FromObjectName(go.name);
         }
 
         public static string Fallback(string label, GameObject go)

@@ -36,6 +36,13 @@ namespace CWAccess.Tests
         }
 
         [Fact]
+        public void ProgressIsSaidWithItsNumbers()
+        {
+            Loc.Use("en");
+            Assert.Equal("Achievement progress: Zombie Zapper, 50 of 200.", Loc.Get("achievement_progress", "Zombie Zapper", 50u, 200u));
+        }
+
+        [Fact]
         public void TheAnnouncementHasTitleAndDescription()
         {
             Loc.Use("en");

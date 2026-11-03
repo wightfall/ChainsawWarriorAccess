@@ -179,6 +179,18 @@ namespace CWAccess
                         Log.Info("achievement " + a.ID + " = " + G.Text(a.Name) + (had ? " (unlocked)" : string.Empty) + ": " + Patches.Achievements.Unlocked(a.ID));
                     }
                     break;
+                case "achievementprogress":
+                    {
+                        // Shows Steam's progress pop-up for an achievement (changes nothing): Steam then reports it,
+                        // which checks that the mod hears Steam's reports and says them.
+                        string id = p.Length > 1 ? p[1] : "ACHIEVEMENT_KILLS_TOTAL";
+                        Log.Info("IndicateAchievementProgress " + id + ": " + Steamworks.SteamUserStats.IndicateAchievementProgress(id, 1, 100));
+                        break;
+                    }
+                case "achievementsay":
+                    // What the mod says when this achievement is unlocked (speaks only; Steam is not touched).
+                    Speaker.Say(Patches.Achievements.Unlocked(p.Length > 1 ? p[1] : "ACHIEVEMENT_WIN_HARD"));
+                    break;
                 case "say":
                     Speaker.Say(Rest(line, p));
                     break;

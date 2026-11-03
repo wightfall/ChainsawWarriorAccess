@@ -167,6 +167,8 @@ namespace CWAccess.Screens
                     items.Add(new NavItem
                     {
                         Key = "card" + e.Name,
+                        // Face down, the name is not on screen either.
+                        ScreenText = () => Revealed ? G.ScreenText(e.Name) : string.Empty,
                         Text = () => CardLabel(e, n, total),
                         Details = () => Revealed ? CardText.EquipmentFull(new WeaponInfo(e), true) : CardLabel(e, n, total),
                         Activate = () => Toggle(e),
@@ -397,6 +399,7 @@ namespace CWAccess.Screens
                 items.Add(new NavItem
                 {
                     Key = "card" + i + w.mpEquipment.Name,
+                    ScreenText = () => G.ScreenText(w.mpEquipment.Name),
                     Text = () => Loc.Get("card_pick", CardText.EquipmentShort(w), n, total) + (Selected == w ? ", " + Loc.Get("state_selected") : string.Empty),
                     Details = () => CardText.EquipmentFull(w, false),
                     Activate = () => Choose(w),
@@ -485,6 +488,7 @@ namespace CWAccess.Screens
                 items.Add(new NavItem
                 {
                     Key = "card" + i + c.Identifier,
+                    ScreenText = () => G.ScreenText(c.Name),
                     Text = () => Loc.Get("card_pick", CardText.Short(c), n, total) + (Selected == c ? ", " + Loc.Get("state_selected") : string.Empty),
                     Details = () => CardText.Full(c, c.Escape),
                     Activate = () => Choose(c),

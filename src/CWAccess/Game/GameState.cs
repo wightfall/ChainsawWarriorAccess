@@ -67,6 +67,15 @@ namespace CWAccess.Game
             return l == null ? string.Empty : TextUtil.Clean(l.text);
         }
 
+        /// <summary>A text of the game's table as it is on screen (English, not translated for speech).</summary>
+        public static string ScreenText(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return string.Empty;
+            string t = CLocalisationManager.GetText(key);
+            if (t == null || t.StartsWith("Cannot find Localication Text")) return string.Empty;
+            return TextUtil.CleanRaw(t);
+        }
+
         public static string Text(string key)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;

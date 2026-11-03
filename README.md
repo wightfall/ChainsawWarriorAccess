@@ -66,7 +66,7 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 | Left / Right arrows | Change a slider or setting; switch the equipment tab |
 | I | Details of the item: everything printed on a card; on a choice of the game board, what it does |
 | Escape or Backspace | Back / cancel; on the game board: pause menu |
-| A letter (menus) | Jump to the next item starting with that letter |
+| A letter (menus) | Jump to the next item starting with that letter (when the mod speaks Thai, the game's English name on screen counts too) |
 | F1 / Shift+F1 | Keys of this screen / all keys and sound cues |
 | F2 | Mod settings |
 | F5 | Say where you are again |
@@ -106,7 +106,8 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 - The tutorial boxes, screen titles, questions and the end of game result.
 - Every achievement as soon as it is unlocked, with the name and description Steam shows in its pop-up: those the game
   unlocks (winning on a difficulty, Fisto, Chain of Skulls...) at once, and those Steam unlocks from statistics (kill
-  counts, damage taken, endings seen) as soon as Steam has stored them. Each is said once.
+  counts, damage taken, endings seen) as soon as Steam has stored them. Each is said once. Progress that Steam shows
+  in a pop-up ("Zombie Zapper, 50 of 200") is said too.
 - **The intro comic:** its five scenes are pictures with speech bubbles. The mod describes each scene, with all of
   its captions and dialogue, when it starts; the first item of the comic screen repeats the description.
 
@@ -218,6 +219,8 @@ rare situations, so every part of the game can be checked without waiting for it
 | `dumpgo HelpGuide_Contents` | write an object of the screen and everything under it to the log |
 | `perf 10` | measure for 10 seconds how long the mod's work takes each frame (written to the log) |
 | `achievements` | list the game's achievements, which are unlocked, and what the mod says for each (changes nothing) |
+| `achievementsay ACHIEVEMENT_WIN_HARD` | say what the mod says when that achievement is unlocked (Steam is not touched) |
+| `achievementprogress ACHIEVEMENT_KILLS_TOTAL` | show Steam's progress pop-up for it (1 of 100; changes nothing), to check that the mod hears and says Steam's reports |
 
 Switch `CommandFile` off again afterwards.
 
@@ -230,7 +233,8 @@ Projects:
 - `tests/CWAccess.Tests` - unit tests: language files, the Thai translations of the mod, setup and game texts, the
   translation of the game's texts (whole texts and texts with filled-in parts), live reloading, the templates, settings
   and their language, sound cues, the F1 keys of each kind of screen, Page Up / Page Down groups, the cached lookups of
-  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, an
+  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, letters
+  that find items by their English name on screen, an
   explanation for every kind of choice the game has, the names of achievements, the installer (a real install, update
   and uninstall on a copy of the game's DLL, the setup replacing itself while it runs from the game folder, and its read-only events and What's new boxes), and
   checks that every part of the game the mod reaches by name still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites

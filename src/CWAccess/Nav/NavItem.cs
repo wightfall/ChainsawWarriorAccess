@@ -30,6 +30,12 @@ namespace CWAccess.Nav
         /// <summary>The group the item belongs to, for Page Up / Page Down (null: none).</summary>
         public string Group;
 
+        /// <summary>
+        /// The item's text as it is on screen (the game's English), also used to jump by letter when the mod speaks
+        /// another language. Null when there is none (the mod's own lists, face-down cards).
+        /// </summary>
+        public Func<string> ScreenText;
+
         /// <summary>For sorting by screen position (screen pixels, y grows upwards).</summary>
         public Vector2 Position;
 

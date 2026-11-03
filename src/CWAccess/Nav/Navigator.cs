@@ -195,8 +195,7 @@ namespace CWAccess.Nav
             for (int step = 1; step <= items.Count; step++)
             {
                 int i = (index + step) % items.Count;
-                string t = items[i].Speak();
-                if (t.Length > 0 && char.ToLowerInvariant(t[0]) == c)
+                if (Letters.Matches(items[i], c))
                 {
                     index = i;
                     SayFocused();
