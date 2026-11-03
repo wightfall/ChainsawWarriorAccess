@@ -64,6 +64,21 @@ namespace CWAccess.Tests
             Assert.Equal("New Game now", GameText.Speak("New Game now"));
         }
 
+        /// <summary>Texts are remembered once translated; a new translation (live reload, other language) replaces them.</summary>
+        [Fact]
+        public void RememberedTranslationsFollowANewLanguageFile()
+        {
+            Assert.Equal("เกมใหม่", GameText.Speak("New Game"));
+            Assert.Equal("เกมใหม่", GameText.Speak("New Game"));
+            Assert.Equal("การเผชิญหน้าปัจจุบัน - ซอมบี้", GameText.Speak("Current encounter - Zombie."));
+            Assert.Equal("Untranslated text", GameText.Speak("Untranslated text"));
+            Assert.Equal("Untranslated text", GameText.Speak("Untranslated text"));
+
+            GameText.Load(LanguageFile.Parse("[keys]\nFrontEnd_NewGame = Neues Spiel\nAnnouncement_EncounterEnemy = Begegnung - %name\n"));
+            Assert.Equal("Neues Spiel", GameText.Speak("New Game"));
+            Assert.Equal("Begegnung - Zombie", GameText.Speak("Current encounter - Zombie."));
+        }
+
         [Fact]
         public void FilledInTextsAreMatchedAndTheirPartsTranslated()
         {

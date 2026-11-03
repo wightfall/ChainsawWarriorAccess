@@ -28,6 +28,13 @@ namespace CWAccess.Game
         private static Dictionary<string, string> byKey = new Dictionary<string, string>();
         private static Dictionary<string, string> byText = new Dictionary<string, string>();
         private static List<Pattern> patterns;
+
+        /// <summary>
+        /// Texts already translated for speech: the screens are read again several times a second and their texts rarely
+        /// change, so each is worked out once. Emptied whenever the translation changes; kept small.
+        /// </summary>
+        private static readonly Dictionary<string, string> spoken = new Dictionary<string, string>();
+        private const int SpokenLimit = 4000;
         private static readonly Regex Token = new Regex(@"%([A-Za-z]+)");
         private static readonly SortedDictionary<string, bool> screenTexts = new SortedDictionary<string, bool>(StringComparer.Ordinal);
         private static string modDir;
@@ -51,6 +58,7 @@ namespace CWAccess.Game
             byKey = new Dictionary<string, string>();
             byText = new Dictionary<string, string>();
             patterns = null;
+            spoken.Clear();
             FilePath = null;
             if (dir == null || code == "en") return;
             string path = Path.Combine(GameDir(dir), code + ".txt");
@@ -73,6 +81,7 @@ namespace CWAccess.Game
             byKey = new Dictionary<string, string>();
             byText = new Dictionary<string, string>();
             patterns = null;
+            spoken.Clear();
             if (f.Sections.TryGetValue("keys", out Dictionary<string, string> keys))
             {
                 foreach (KeyValuePair<string, string> kv in keys) if (kv.Value.Length > 0) byKey[kv.Key] = kv.Value;
@@ -98,6 +107,19 @@ namespace CWAccess.Game
         public static string Speak(string text)
         {
             if (!Active || string.IsNullOrEmpty(text)) return text;
+            if (spoken.TryGetValue(text, out string known)) return known;
+            string result = Translate(text);
+            // Only once the game's text table is there: before that nothing can be translated yet.
+            if (patterns != null)
+            {
+                if (spoken.Count >= SpokenLimit) spoken.Clear();
+                spoken[text] = result;
+            }
+            return result;
+        }
+
+        private static string Translate(string text)
+        {
             string clean = TextUtil.CleanRaw(text);
             BuildPatterns();
             if (byText.TryGetValue(clean, out string t)) return t;

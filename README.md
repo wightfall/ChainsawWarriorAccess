@@ -222,6 +222,7 @@ rare situations, so every part of the game can be checked without waiting for it
 | `dumpgo HelpGuide_Contents` | write an object of the screen and everything under it to the log |
 | `perf 10` | measure for 10 seconds how long the mod's work takes each frame (written to the log) |
 | `achievements` | list the game's achievements, which are unlocked, and what the mod says for each (changes nothing) |
+| `keybindings` | list key bindings the game itself has on buttons, which would act on keys besides the mod (there are none; changes nothing) |
 | `steamachievements` | list Steam's own achievements of the game with their names and descriptions (changes nothing) |
 | `achievementsay ACHIEVEMENT_WIN_HARD` | say what the mod says when that achievement is unlocked (Steam is not touched) |
 | `achievementprogress ACHIEVEMENT_KILLS_TOTAL` | show Steam's progress pop-up for it (1 of 100; changes nothing), to check that the mod hears and says Steam's reports |

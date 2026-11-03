@@ -179,6 +179,18 @@ namespace CWAccess
                         Log.Info("achievement " + a.ID + " = " + G.Text(a.Name) + (had ? " (unlocked)" : string.Empty) + ": " + Patches.Achievements.Unlocked(a.ID));
                     }
                     break;
+                case "keybindings":
+                    // Read only: the game's own key bindings on buttons (they would act on keys besides the mod).
+                    foreach (UIButtonKeyBinding b in Resources.FindObjectsOfTypeAll(typeof(UIButtonKeyBinding)))
+                    {
+                        Log.Info("keybinding " + b.gameObject.name + " = " + b.keyCode + (b.enabled ? string.Empty : " (off)") + " in " + (b.transform.root != null ? b.transform.root.name : "?"));
+                    }
+                    foreach (UIButtonKeys k in Resources.FindObjectsOfTypeAll(typeof(UIButtonKeys)))
+                    {
+                        Log.Info("buttonkeys " + k.gameObject.name + " in " + (k.transform.root != null ? k.transform.root.name : "?"));
+                    }
+                    Log.Info("keybindings: done");
+                    break;
                 case "steamachievements":
                     // Read only: Steam's own list (id, name, description in Steam's language).
                     for (uint i = 0; i < Steamworks.SteamUserStats.GetNumAchievements(); i++)
