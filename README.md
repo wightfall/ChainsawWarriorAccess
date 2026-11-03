@@ -2,8 +2,8 @@
 
 A screen reader and keyboard accessibility mod for **Chainsaw Warrior** (Auroch Digital, Steam app 251710).
 Every part of the game can be played without sight: menus, options, saving and loading, the intro comic,
-character creation, the equipment shop, every house card, combat, dice rolls, tutorials, pop-up questions and the
-end screen, plus a settings panel, sound cues and an English and Thai interface.
+character creation, the equipment shop, every house card, combat, dice rolls, tutorials, pop-up questions, the
+end screen and achievements, plus a settings panel, sound cues and an English and Thai interface.
 
 The mod speaks through **NVDA** directly, through **JAWS** when it runs, and through **Windows SAPI** voices otherwise.
 Braille displays get the same text through NVDA.
@@ -58,7 +58,7 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 |-----|--------|
 | Up / Down arrows, Tab / Shift+Tab | Move through the items of the screen (hold an arrow to keep moving) |
 | Home / End | First / last item |
-| Page Up / Page Down | Previous / next group of items (the sections of the Shift+F1 list and of the settings, the parts of the board, the cards and buttons of card screens); in a long list without groups such as the game log, 10 items |
+| Page Up / Page Down | Previous / next group of items (the sections of the Shift+F1 list and of the settings, the pages of the game's Help, the parts of the board, the cards and buttons of card screens, the achievements); in a long list without groups such as the game log, 10 items |
 | Enter | Press the button, choose the card |
 | Space | Press the button; on card pickers only select the card |
 | Left / Right arrows | Change a slider or setting; switch the equipment tab |
@@ -102,11 +102,9 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 - Equipment gained or lost (also a second copy of a card you already have), uses left and spare clips.
 - The time left every 10 minutes of game time, and nightfall.
 - The tutorial boxes, screen titles, questions and the end of game result.
-- Achievements the game unlocks while you play (winning, Fisticuffs, Chain of Skulls...), with their description;
-  sighted players see them in Steam's pop-up. Achievements Steam unlocks from statistics (kill counts, endings seen)
-  are not seen by the game, so they are only on the Achievements screen.
-- **Achievements and best scores** (main menu): besides the game's three, the mod lists every Steam achievement
-  with whether you have it and what it asks for, which otherwise only Steam's overlay shows (Page Down jumps there).
+- Achievements the game unlocks while you play (winning on a difficulty, Fisto, Chain of Skulls...), with the name and
+  description Steam shows in its pop-up. Achievements Steam unlocks by itself from statistics (kill counts, endings
+  seen) never pass through the game, so they are not announced; the Achievements screen lists them.
 - **The intro comic:** its five scenes are pictures with speech bubbles. The mod describes each scene, with all of
   its captions and dialogue, when it starts; the first item of the comic screen repeats the description.
 
@@ -122,6 +120,12 @@ When choosing one card (a weapon to shoot with, an item to use, an enemy to figh
 
 Guns list the score needed with 2 dice against each kind of target, already adjusted for your marksmanship
 and a CATS sight, as printed on the card.
+
+### Achievements and best scores
+
+The main menu's **Achievements and best scores** screen has your best score on each difficulty and the game's three
+achievements. The mod adds a **Steam achievements** group after them (Page Down jumps there): every Steam achievement
+of the game with whether you have it and what it asks for, which otherwise only Steam's overlay shows.
 
 ## Settings (F2)
 
@@ -224,10 +228,10 @@ Projects:
 - `tests/CWAccess.Tests` - unit tests: language files, the Thai translations of the mod, setup and game texts, the
   translation of the game's texts (whole texts and texts with filled-in parts), live reloading, the templates, settings
   and their language, sound cues, the F1 keys of each kind of screen, Page Up / Page Down groups, the cached lookups of
-  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, an explanation for every kind of choice the game has, the
-  names of achievements, the installer (a real install, update and uninstall on a copy of the game's DLL, and the setup
-  replacing itself while it runs from the game folder), and checks that every part of the game the mod reaches by name
-  still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
+  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, an
+  explanation for every kind of choice the game has, the names of achievements, the installer (a real install, update
+  and uninstall on a copy of the game's DLL, and the setup replacing itself while it runs from the game folder), and
+  checks that every part of the game the mod reaches by name still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
   `Languages\template.txt` after adding texts and puts every language file back into its groups.
 
 This repository contains no code or assets of the game.
