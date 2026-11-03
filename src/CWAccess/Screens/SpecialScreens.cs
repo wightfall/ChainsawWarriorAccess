@@ -39,6 +39,15 @@ namespace CWAccess.Screens
     {
         private readonly CAchievementScreen screen;
 
+        /// <summary>The Steam achievements, read once each time the screen opens.</summary>
+        private List<KeyValuePair<string, bool>> steam;
+
+        public override void OnEnter()
+        {
+            steam = null;
+            base.OnEnter();
+        }
+
         public AchievementScreen(GameObject root) : base("Achievement", root)
         {
             screen = root.GetComponent<CAchievementScreen>();
@@ -76,6 +85,21 @@ namespace CWAccess.Screens
             UIScan.SortReadingOrder(items);
             // Page Up / Page Down: past the achievements to the buttons and back.
             foreach (NavItem item in items) item.Group = item.Key != null && item.Key.StartsWith("ach") ? "achievements" : "screen";
+            // The Steam achievements, which the game shows only in Steam's overlay, before the Back button.
+            if (steam == null) steam = Patches.Achievements.SteamList();
+            if (steam.Count > 0)
+            {
+                var more = new List<NavItem>();
+                int unlocked = steam.FindAll(x => x.Value).Count, total = steam.Count;
+                more.Add(new NavItem { Key = "steamhead", Group = "steam", Text = () => Loc.Get("steam_achievements", unlocked, total) });
+                for (int i = 0; i < steam.Count; i++)
+                {
+                    string text = steam[i].Key;
+                    more.Add(new NavItem { Key = "steam" + i, Group = "steam", Text = () => text });
+                }
+                int back = items.FindIndex(x => x.Go != null && x.Go.name == "Button_Back");
+                items.InsertRange(back >= 0 ? back : items.Count, more);
+            }
             return items;
         }
 

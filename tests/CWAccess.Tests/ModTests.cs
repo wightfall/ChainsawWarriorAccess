@@ -119,6 +119,17 @@ namespace CWAccess.Tests
             }
         }
 
+        /// <summary>I on a choice of the game board explains it: every kind of choice the game has needs a text.</summary>
+        [Fact]
+        public void EveryChoiceOfTheGameHasAnExplanation()
+        {
+            TypeDefinition actions = Game.Value.GetType("EActionType");
+            Assert.NotNull(actions);
+            var missing = actions.Fields.Where(f => f.IsStatic && f.Name != "AT_None" && f.Name != "AT_NumActions")
+                .Select(f => f.Name).Where(n => Loc.TryGet("actionhelp_" + n) == null).ToList();
+            Assert.True(missing.Count == 0, "No explanation for: " + string.Join(", ", missing));
+        }
+
         [Fact]
         public void EveryReflectedMemberExistsInTheGame()
         {

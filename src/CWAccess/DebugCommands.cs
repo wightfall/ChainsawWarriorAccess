@@ -171,6 +171,14 @@ namespace CWAccess
                 case "dumpgo":
                     Diagnostics.DumpObject(Rest(line, p));
                     break;
+                case "achievements":
+                    // Read only: the game's achievements and whether Steam has them unlocked.
+                    foreach (Achievement a in CStatsManager.Achievements)
+                    {
+                        bool had = AurochDigital.StatsAndAchievements.instance != null && AurochDigital.StatsAndAchievements.instance.DidGetAchievement(a.ID);
+                        Log.Info("achievement " + a.ID + " = " + G.Text(a.Name) + (had ? " (unlocked)" : string.Empty) + ": " + Patches.Achievements.Unlocked(a.ID));
+                    }
+                    break;
                 case "say":
                     Speaker.Say(Rest(line, p));
                     break;

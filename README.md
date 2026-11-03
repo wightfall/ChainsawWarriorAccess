@@ -62,7 +62,7 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 | Enter | Press the button, choose the card |
 | Space | Press the button; on card pickers only select the card |
 | Left / Right arrows | Change a slider or setting; switch the equipment tab |
-| I | Details of the item (everything printed on a card) |
+| I | Details of the item: everything printed on a card; on a choice of the game board, what it does |
 | Escape or Backspace | Back / cancel; on the game board: pause menu |
 | A letter (menus) | Jump to the next item starting with that letter |
 | F1 / Shift+F1 | Keys of this screen / all keys and sound cues |
@@ -102,6 +102,11 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 - Equipment gained or lost (also a second copy of a card you already have), uses left and spare clips.
 - The time left every 10 minutes of game time, and nightfall.
 - The tutorial boxes, screen titles, questions and the end of game result.
+- Achievements the game unlocks while you play (winning, Fisticuffs, Chain of Skulls...), with their description;
+  sighted players see them in Steam's pop-up. Achievements Steam unlocks from statistics (kill counts, endings seen)
+  are not seen by the game, so they are only on the Achievements screen.
+- **Achievements and best scores** (main menu): besides the game's three, the mod lists every Steam achievement
+  with whether you have it and what it asks for, which otherwise only Steam's overlay shows (Page Down jumps there).
 - **The intro comic:** its five scenes are pictures with speech bubbles. The mod describes each scene, with all of
   its captions and dialogue, when it starts; the first item of the comic screen repeats the description.
 
@@ -206,6 +211,7 @@ rare situations, so every part of the game can be checked without waiting for it
 | `dump`, `state`, `dumptexts`, `dumplabels`, `gametemplate` | write the screen, state, texts or template to the log / mod folder |
 | `dumpgo HelpGuide_Contents` | write an object of the screen and everything under it to the log |
 | `perf 10` | measure for 10 seconds how long the mod's work takes each frame (written to the log) |
+| `achievements` | list the game's achievements, which are unlocked, and what the mod says for each (changes nothing) |
 
 Switch `CommandFile` off again afterwards.
 
@@ -218,7 +224,8 @@ Projects:
 - `tests/CWAccess.Tests` - unit tests: language files, the Thai translations of the mod, setup and game texts, the
   translation of the game's texts (whole texts and texts with filled-in parts), live reloading, the templates, settings
   and their language, sound cues, the F1 keys of each kind of screen, Page Up / Page Down groups, the cached lookups of
-  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, the installer (a real install, update and uninstall on a copy of the game's DLL, and the setup
+  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, an explanation for every kind of choice the game has, the
+  names of achievements, the installer (a real install, update and uninstall on a copy of the game's DLL, and the setup
   replacing itself while it runs from the game folder), and checks that every part of the game the mod reaches by name
   still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
   `Languages\template.txt` after adding texts and puts every language file back into its groups.
