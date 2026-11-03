@@ -631,5 +631,36 @@ namespace CWAccess
 
         /// <summary>All built-in English texts, for the translation template and the tests.</summary>
         public static IEnumerable<KeyValuePair<string, string>> All => texts;
+
+        /// <summary>The "##### " headings of the language files, in order.</summary>
+        public static readonly string[] CategoryOrder =
+        {
+            "General speech", "Screens and menus", "Keys and help", "Game board", "Cards and equipment", "Mod settings", "Sound cues",
+        };
+
+        private static readonly string[][] CategoryPrefixes =
+        {
+            new[] { "keys_", "help_", "panel_" },
+            new[] { "set_" },
+            new[] { "cue_", "cuedesc_" },
+            new[] { "screen_", "obj_", "opt_", "difficulty_", "slot", "ach_", "comic_", "load_", "save_" },
+            new[] { "card_", "cards_", "category_", "type_", "tab", "buy_", "eq_" },
+            new[] { "item_", "choice", "deck_", "room_", "time_", "log_", "dice_", "hit_", "hits_", "stat_", "skill_", "night", "venom", "turn" },
+        };
+
+        private static readonly string[] CategoryOfPrefixes = { "Keys and help", "Mod settings", "Sound cues", "Screens and menus", "Cards and equipment", "Game board" };
+
+        /// <summary>The heading a text belongs under in the language files.</summary>
+        public static string Category(string key)
+        {
+            for (int i = 0; i < CategoryPrefixes.Length; i++)
+            {
+                foreach (string p in CategoryPrefixes[i])
+                {
+                    if (key.StartsWith(p, StringComparison.Ordinal)) return CategoryOfPrefixes[i];
+                }
+            }
+            return "General speech";
+        }
     }
 }

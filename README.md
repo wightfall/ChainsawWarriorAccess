@@ -99,7 +99,7 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 - The choices available whenever they change.
 - Changes of wounds, endurance, venom, radiation, hand-to-hand, marksmanship, reflexes and equipment points;
   each stat rolled during character creation.
-- Equipment gained or lost, uses left and spare clips.
+- Equipment gained or lost (also a second copy of a card you already have), uses left and spare clips.
 - The time left every 10 minutes of game time, and nightfall.
 - The tutorial boxes, screen titles, questions and the end of game result.
 - **The intro comic:** its five scenes are pictures with speech bubbles. The mod describes each scene, with all of
@@ -161,6 +161,14 @@ Two kinds of files, both plain text (`key = text`, `\n` for a line break, `#` fo
   screen as you visit it. Keep `%words` such as `%name`: the game fills them in. Filled-in parts that are known texts
   (an enemy's name, the deck number) are translated too.
 
+Every language file is divided into groups, each starting with a line `##### Group name`, so you can search for
+`#####` (or for the group) to jump to the texts you want:
+
+- the mod: General speech, Screens and menus, Keys and help, Game board, Cards and equipment, Mod settings,
+  Sound cues, and The setup program;
+- the game: Menus and screens, Character creation, Messages, Enemies, Traps, Rooms, Equipment, End of game and
+  achievements, Other texts, and Screen texts.
+
 A personal `CWAccess\strings.txt` in the mod's format replaces single texts of any language and is kept by updates
 (the shipped language files are replaced by updates).
 
@@ -210,10 +218,10 @@ Projects:
 - `tests/CWAccess.Tests` - unit tests: language files, the Thai translations of the mod, setup and game texts, the
   translation of the game's texts (whole texts and texts with filled-in parts), live reloading, the templates, settings
   and their language, sound cues, the F1 keys of each kind of screen, Page Up / Page Down groups, the cached lookups of
-  the game's fields, the installer (a real install, update and uninstall on a copy of the game's DLL, and the setup
+  the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, the installer (a real install, update and uninstall on a copy of the game's DLL, and the setup
   replacing itself while it runs from the game folder), and checks that every part of the game the mod reaches by name
   still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
-  `Languages\template.txt` after adding texts.
+  `Languages\template.txt` after adding texts and puts every language file back into its groups.
 
 This repository contains no code or assets of the game.
 

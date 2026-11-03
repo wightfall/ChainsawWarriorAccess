@@ -202,44 +202,31 @@ namespace CWAccess.Game
         {
             Dictionary<WeaponInfo, string> now = EquipmentState(g);
             var parts = new List<string>();
+            // Gains and losses count cards of each kind, so a second copy of a card is a gain too, while the new
+            // objects a loaded game makes for the same cards are not.
+            var cardsBefore = new List<StatsEquipmentBase>();
+            foreach (WeaponInfo w in lastEquipment.Keys) cardsBefore.Add(w.mpEquipment);
+            var cardsNow = new List<StatsEquipmentBase>();
+            foreach (WeaponInfo w in now.Keys) cardsNow.Add(w.mpEquipment);
+            foreach (StatsEquipmentBase e in Changes.Added(cardsBefore, cardsNow))
+            {
+                Audio.CuePlayer.Play(Audio.Cue.ItemGained);
+                parts.Add(Loc.Get("eq_gained", G.Text(e.Name)));
+            }
             foreach (KeyValuePair<WeaponInfo, string> kv in now)
             {
-                if (!lastEquipment.TryGetValue(kv.Key, out string before))
-                {
-                    // Copies of the same card are new objects when a game is loaded; only real gains count.
-                    if (!SameItemExisted(kv.Key))
-                    {
-                        Audio.CuePlayer.Play(Audio.Cue.ItemGained);
-                        parts.Add(Loc.Get("eq_gained", G.Text(kv.Key.mpEquipment.Name)));
-                    }
-                }
-                else if (before != kv.Value && kv.Value.Length > 0)
+                if (lastEquipment.TryGetValue(kv.Key, out string before) && before != kv.Value && kv.Value.Length > 0)
                 {
                     parts.Add(G.Text(kv.Key.mpEquipment.Name) + ": " + kv.Value);
                 }
             }
-            foreach (WeaponInfo w in lastEquipment.Keys)
+            foreach (StatsEquipmentBase e in Changes.Added(cardsNow, cardsBefore))
             {
-                if (!now.ContainsKey(w) && !SameItemNow(now, w))
-                {
-                    Audio.CuePlayer.Play(Audio.Cue.ItemLost);
-                    parts.Add(Loc.Get("eq_lost", G.Text(w.mpEquipment.Name)));
-                }
+                Audio.CuePlayer.Play(Audio.Cue.ItemLost);
+                parts.Add(Loc.Get("eq_lost", G.Text(e.Name)));
             }
             lastEquipment = now;
             if (parts.Count > 0) Say(TextUtil.Join(parts));
-        }
-
-        private static bool SameItemExisted(WeaponInfo w)
-        {
-            foreach (WeaponInfo old in lastEquipment.Keys) if (old.mpEquipment == w.mpEquipment) return true;
-            return false;
-        }
-
-        private static bool SameItemNow(Dictionary<WeaponInfo, string> now, WeaponInfo w)
-        {
-            foreach (WeaponInfo cur in now.Keys) if (cur.mpEquipment == w.mpEquipment) return true;
-            return false;
         }
 
         /// <summary>The choices on offer as one number, in order (0: none); comparing it builds no text.</summary>

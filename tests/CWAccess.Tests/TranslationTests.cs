@@ -224,8 +224,9 @@ namespace CWAccess.Tests
             sb.Append("# Saving the file while the language is in use reloads it in the game within 2 seconds.\r\n");
             sb.Append("# The game's own texts (cards, messages) are translated in Languages\\game\\<code>.txt; the mod writes\r\n");
             sb.Append("# Languages\\game\\template.txt for them on your computer.\r\n");
-            foreach (KeyValuePair<string, string> kv in Loc.All) sb.Append(kv.Key).Append(" = ").Append(kv.Value.Replace("\n", "\\n")).Append("\r\n");
-            sb.Append("\r\n# ===== The setup program =====\r\n[setup]\r\n");
+            sb.Append("# Search for ##### to jump between the groups of texts.\r\n");
+            LanguageFile.AppendGrouped(sb, Loc.All, Loc.Category, Loc.CategoryOrder);
+            sb.Append("\r\n##### The setup program\r\n[setup]\r\n");
             var seen = new HashSet<string>();
             foreach (string path in Directory.GetFiles(TestPaths.InstallerSource, "*.cs").OrderBy(p => p, StringComparer.Ordinal))
             {

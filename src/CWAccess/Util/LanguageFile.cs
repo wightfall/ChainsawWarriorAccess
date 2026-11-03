@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -88,6 +89,32 @@ namespace CWAccess
         }
 
         /// <summary>A file in the same format, every key with its English text (for translators).</summary>
+        /// <summary>
+        /// Writes "key = text" lines under "##### Category" headings (search for ##### to jump between them): the
+        /// categories in the given order, unknown ones last, each keeping the order of its entries.
+        /// </summary>
+        public static void AppendGrouped(StringBuilder sb, IEnumerable<KeyValuePair<string, string>> entries, Func<string, string> category, IList<string> order)
+        {
+            var groups = new List<string>();
+            var byGroup = new Dictionary<string, List<KeyValuePair<string, string>>>();
+            foreach (KeyValuePair<string, string> kv in entries)
+            {
+                string c = category(kv.Key);
+                if (!byGroup.TryGetValue(c, out List<KeyValuePair<string, string>> list))
+                {
+                    list = new List<KeyValuePair<string, string>>();
+                    byGroup[c] = list;
+                    groups.Add(c);
+                }
+                list.Add(kv);
+            }
+            foreach (string c in groups.OrderBy(g => order.IndexOf(g) < 0 ? int.MaxValue : order.IndexOf(g)))
+            {
+                sb.Append("\r\n##### ").Append(c).Append("\r\n");
+                foreach (KeyValuePair<string, string> kv in byGroup[c]) sb.Append(kv.Key).Append(" = ").Append(kv.Value.Replace("\n", "\\n")).Append("\r\n");
+            }
+        }
+
         public static string Template(IEnumerable<KeyValuePair<string, string>> english, string header)
         {
             var sb = new StringBuilder();

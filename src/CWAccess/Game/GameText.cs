@@ -198,6 +198,40 @@ namespace CWAccess.Game
             return letters >= 2;
         }
 
+        /// <summary>The "##### " headings of the game's text keys, in order.</summary>
+        public static readonly string[] CategoryOrder =
+        {
+            "Menus and screens", "Character creation", "Messages", "Enemies", "Traps", "Rooms", "Equipment", "End of game and achievements", "Other texts",
+        };
+
+        /// <summary>The heading a key of the game's text table belongs under (by the part before its first "_").</summary>
+        public static string Category(string key)
+        {
+            int u = key.IndexOf('_');
+            string p = u > 0 ? key.Substring(0, u) : key;
+            switch (p)
+            {
+                case "Universal": case "FrontEnd": case "Splash": case "Options": case "Pause": case "Save": case "Load": case "Quit":
+                case "Difficulty": case "Help": case "Credits": case "SocialMedia": case "MoGraphics": case "Reveal": case "LeaderBoard":
+                    return "Menus and screens";
+                case "CharCreation": case "Attribute": case "ST": case "Skill":
+                    return "Character creation";
+                case "Announcement": case "PlayerAction": case "LuckyShot": case "ExtraWound": case "Tutorial": case "CardBack":
+                    return "Messages";
+                case "Enemy": case "EnemySelect":
+                    return "Enemies";
+                case "Trap":
+                    return "Traps";
+                case "Other":
+                    return "Rooms";
+                case "Item": case "EquipmentSelect":
+                    return "Equipment";
+                case "EndGame": case "PersonalStats":
+                    return "End of game and achievements";
+            }
+            return p.StartsWith("Achievement", StringComparison.Ordinal) ? "End of game and achievements" : "Other texts";
+        }
+
         /// <summary>Writes the template: the game's whole text table under [keys] and the screens' texts under [texts].</summary>
         public static string WriteTemplate(string dir)
         {
@@ -210,12 +244,16 @@ namespace CWAccess.Game
             sb.Append("# Copy this file to <code>.txt (th.txt, de.txt ...) next to it and translate the right side of each line.\r\n");
             sb.Append("# Keep %words (the game fills them in) and \\n (line breaks). Lines you leave in English stay English.\r\n");
             sb.Append("# Written by the mod from the game on this computer; it grows as you visit more screens.\r\n");
+            sb.Append("# Search for ##### to jump between the groups.\r\n");
             sb.Append("[keys]\r\n");
             Dictionary<string, string> table = Table;
             if (table != null)
             {
-                foreach (KeyValuePair<string, string> kv in table) sb.Append(kv.Key).Append(" = ").Append(OneLine(kv.Value)).Append("\r\n");
+                var lines = new List<KeyValuePair<string, string>>();
+                foreach (KeyValuePair<string, string> kv in table) lines.Add(new KeyValuePair<string, string>(kv.Key, OneLine(kv.Value)));
+                LanguageFile.AppendGrouped(sb, lines, Category, CategoryOrder);
             }
+            sb.Append("\r\n##### Screen texts (not in the game's table)\r\n");
             sb.Append("[texts]\r\n");
             foreach (string t in screenTexts.Keys)
             {
