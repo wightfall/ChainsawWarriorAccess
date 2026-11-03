@@ -27,6 +27,9 @@ namespace CWAccess.Nav
         /// <summary>A checkbox or radio button: Enter switches it (said by F1).</summary>
         public bool IsSwitch;
 
+        /// <summary>The item says its own position (the cards of a card screen: "2 of 7"); no list position is added.</summary>
+        public bool OwnPosition;
+
         /// <summary>The group the item belongs to, for Page Up / Page Down (null: none).</summary>
         public string Group;
 

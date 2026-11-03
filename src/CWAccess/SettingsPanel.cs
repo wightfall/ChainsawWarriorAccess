@@ -27,6 +27,7 @@ namespace CWAccess
                 Heading("set_group_speech"),
                 LanguageItem(),
                 Toggle("set_roles", Settings.SpeakRoles),
+                Toggle("set_position", Settings.AnnouncePosition),
                 Toggle("set_actions", Settings.AnnounceActions),
                 Toggle("set_dice", Settings.AnnounceDice),
                 Toggle("set_stats", Settings.AnnounceStats),

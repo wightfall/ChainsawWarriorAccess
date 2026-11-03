@@ -579,6 +579,12 @@ PersonalStats_DeathSuicide = ตายเพราะพลีชีพ: %deaths
 
 ##### Screen texts (not in the game's table)
 [texts]
+Easy: 0000000 = ง่าย: 0000000
+Medium: 0000000 = ปานกลาง: 0000000
+Hard: 0000000 = ยาก: 0000000
+save 1 = บันทึก 1
+Save 2 = บันทึก 2
+Save 3 = บันทึก 3
 One = หนึ่ง
 Two = สอง
 Skill = ทักษะ

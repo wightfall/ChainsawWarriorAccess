@@ -112,13 +112,16 @@ namespace CWAccess.Patches
         public static string Unlocked(string id)
         {
             Title(id, out string name, out string desc);
-            return TextUtil.Join(Loc.Get("achievement_unlocked", name, desc ?? string.Empty).TrimEnd(' ', '.') + ".");
+            // The language's own wording decides the punctuation (Thai has no full stops).
+            return Loc.Get("achievement_unlocked", name, desc ?? string.Empty).Trim();
         }
 
-        private static void Title(string id, out string name, out string desc)
+        internal static void Title(string id, out string name, out string desc)
         {
-            name = null;
-            desc = null;
+            // The mod's own texts first: they follow the mod's language (Thai...).
+            name = Loc.TryGet("achname_" + id);
+            desc = Loc.TryGet("achdesc_" + id);
+            if (!string.IsNullOrEmpty(name)) return;
             try
             {
                 if (SteamManager.Initialized)
@@ -160,9 +163,8 @@ namespace CWAccess.Patches
                     string id = Steamworks.SteamUserStats.GetAchievementName(i);
                     if (string.IsNullOrEmpty(id)) continue;
                     Steamworks.SteamUserStats.GetAchievement(id, out bool had);
-                    string name = Steamworks.SteamUserStats.GetAchievementDisplayAttribute(id, "name");
-                    string desc = Steamworks.SteamUserStats.GetAchievementDisplayAttribute(id, "desc");
-                    list.Add(new System.Collections.Generic.KeyValuePair<string, bool>(TextUtil.Join(string.IsNullOrEmpty(name) ? NameOf(id) : name, Loc.Get(had ? "ach_unlocked" : "ach_locked"), desc), had));
+                    Title(id, out string name, out string desc);
+                    list.Add(new System.Collections.Generic.KeyValuePair<string, bool>(TextUtil.Join(name, Loc.Get(had ? "ach_unlocked" : "ach_locked"), desc), had));
                 }
             }
             catch (Exception e)

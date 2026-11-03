@@ -262,6 +262,52 @@ namespace CWAccess
             // Key list (Shift+F1)
             ["panel_all_keys"] = "All keys and sound cues",
             ["achievement_unlocked"] = "Achievement unlocked: {0}. {1}",
+            ["achname_ACHIEVEMENT_WIN_EASY"] = "Easy",
+            ["achdesc_ACHIEVEMENT_WIN_EASY"] = "Beat the game on Easy setting.",
+            ["achname_ACHIEVEMENT_WIN_MEDIUM"] = "Medium",
+            ["achdesc_ACHIEVEMENT_WIN_MEDIUM"] = "Beat the game on Medium setting.",
+            ["achname_ACHIEVEMENT_WIN_HARD"] = "Hard",
+            ["achdesc_ACHIEVEMENT_WIN_HARD"] = "Beat the game on Hard setting.",
+            ["achname_ACHIEVEMENT_ALL_ENDINGS"] = "Death and Glory",
+            ["achdesc_ACHIEVEMENT_ALL_ENDINGS"] = "Discover all 9 Outcomes.",
+            ["achname_ACHIEVEMENT_BYPASS_TRAPS"] = "Trap Trickster",
+            ["achdesc_ACHIEVEMENT_BYPASS_TRAPS"] = "Use items to bypass 50 traps.",
+            ["achname_ACHIEVEMENT_CHAIN_OF_SKULLS"] = "Chain of Skulls",
+            ["achdesc_ACHIEVEMENT_CHAIN_OF_SKULLS"] = "Kill one of every enemy type in a single game.",
+            ["achname_ACHIEVEMENT_THRONE_OF_SKULLS"] = "Throne of skulls",
+            ["achdesc_ACHIEVEMENT_THRONE_OF_SKULLS"] = "Kill one of every enemy type in a single game on Classic difficulty.",
+            ["achname_ACHIEVEMENT_DAMAGE_RADIATION"] = "Glowin'",
+            ["achdesc_ACHIEVEMENT_DAMAGE_RADIATION"] = "Take 250 points of radiation damage.",
+            ["achname_ACHIEVEMENT_DAMAGE_VENOM"] = "Turnin'",
+            ["achdesc_ACHIEVEMENT_DAMAGE_VENOM"] = "Take 100 points of venom damage.",
+            ["achname_ACHIEVEMENT_DAMAGE_WOUND"] = "Bleedin'",
+            ["achdesc_ACHIEVEMENT_DAMAGE_WOUND"] = "Take 200 points of physical damage.",
+            ["achname_ACHIEVEMENT_FISTO"] = "Fisto",
+            ["achdesc_ACHIEVEMENT_FISTO"] = "Punch Darkness... Right in the face.",
+            ["achname_ACHIEVEMENT_JUST_IN_SLIME"] = "Just in Slime",
+            ["achdesc_ACHIEVEMENT_JUST_IN_SLIME"] = "Find a way to use Time Grenades on the Slime in the second deck to send it back in time.",
+            ["achname_ACHIEVEMENT_KILLS_AGENT"] = "Chaos Crusher",
+            ["achdesc_ACHIEVEMENT_KILLS_AGENT"] = "Kill 100 Agents in combat.",
+            ["achname_ACHIEVEMENT_KILLS_DARKNESS"] = "Darkness Destroyer",
+            ["achdesc_ACHIEVEMENT_KILLS_DARKNESS"] = "Kill Darkness 25 times on any difficulty.",
+            ["achname_ACHIEVEMENT_KILLS_MEATMACHINE"] = "Meat Murderer",
+            ["achdesc_ACHIEVEMENT_KILLS_MEATMACHINE"] = "Kill the Meat Machine 25 times in combat.",
+            ["achname_ACHIEVEMENT_KILLS_MUTANT"] = "Mutant Masher",
+            ["achdesc_ACHIEVEMENT_KILLS_MUTANT"] = "Kill 50 Mutants in combat.",
+            ["achname_ACHIEVEMENT_KILLS_RAT"] = "Rat Remover",
+            ["achdesc_ACHIEVEMENT_KILLS_RAT"] = "Kill 50 Rats in combat.",
+            ["achname_ACHIEVEMENT_KILLS_SLIME"] = "Slime Slapper",
+            ["achdesc_ACHIEVEMENT_KILLS_SLIME"] = "Kill 10 Slimes in combat.",
+            ["achname_ACHIEVEMENT_KILLS_TOTAL"] = "Monster Massacre",
+            ["achdesc_ACHIEVEMENT_KILLS_TOTAL"] = "Kill 1000 monsters in combat.",
+            ["achname_ACHIEVEMENT_KILLS_TOTAL_2000"] = "The New York Chainsaw Massacre",
+            ["achdesc_ACHIEVEMENT_KILLS_TOTAL_2000"] = "Kill 2000 enemies in combat.",
+            ["achname_ACHIEVEMENT_KILLS_ZOMBIE"] = "Zombie Zapper",
+            ["achdesc_ACHIEVEMENT_KILLS_ZOMBIE"] = "Kill 200 Zombies in combat.",
+            ["achname_ACHIEVEMENT_KNIFE_FIGHT"] = "Don't bring a Chainsaw to a Knife fight",
+            ["achdesc_ACHIEVEMENT_KNIFE_FIGHT"] = "Have your Chainsaw destroyed while having the Knife still in your inventory.",
+            ["achname_ACHIEVEMENT_SEEMS_IRONIC"] = "Seems Ironic",
+            ["achdesc_ACHIEVEMENT_SEEMS_IRONIC"] = "Kill the Suicide Cultist with an explosive weapon.",
             ["achievement_progress"] = "Achievement progress: {0}, {1} of {2}.",
             ["steam_achievements"] = "Steam achievements: {0} of {1} unlocked",
             ["actionhelp_AT_Ranged"] = "Shoot with a gun or the Laser Lance: first a Reflexes roll to fire before the enemy reaches you, then 2 dice to hit; the score needed is on the weapon card.",
@@ -353,6 +399,8 @@ namespace CWAccess
             ["set_language"] = "Language",
             ["set_language_auto"] = "automatic, {0}",
             ["set_roles"] = "Say the kind of control (button, slider)",
+            ["set_position"] = "Say the position in the list (1 of 10)",
+            ["position"] = "{0} of {1}",
             ["set_room"] = "Announce the room of each new card",
             ["set_fullcard"] = "Read the whole card when it is turned over",
             ["set_repeat"] = "Repeat the last message when back on the board",
@@ -676,20 +724,21 @@ namespace CWAccess
         /// <summary>The "##### " headings of the language files, in order.</summary>
         public static readonly string[] CategoryOrder =
         {
-            "General speech", "Screens and menus", "Keys and help", "Game board", "Cards and equipment", "Mod settings", "Sound cues",
+            "General speech", "Screens and menus", "Keys and help", "Game board", "Cards and equipment", "Achievements", "Mod settings", "Sound cues",
         };
 
         private static readonly string[][] CategoryPrefixes =
         {
             new[] { "keys_", "help_", "panel_" },
             new[] { "set_" },
+            new[] { "achname_", "achdesc_", "achievement_", "steam_", "ach_" },
             new[] { "cue_", "cuedesc_" },
             new[] { "screen_", "obj_", "opt_", "difficulty_", "slot", "ach_", "steam_", "comic_", "load_", "save_" },
             new[] { "card_", "cards_", "category_", "type_", "tab", "buy_", "eq_" },
             new[] { "actionhelp_", "achievement_", "item_", "choice", "deck_", "room_", "time_", "log_", "dice_", "hit_", "hits_", "stat_", "skill_", "night", "venom", "turn" },
         };
 
-        private static readonly string[] CategoryOfPrefixes = { "Keys and help", "Mod settings", "Sound cues", "Screens and menus", "Cards and equipment", "Game board" };
+        private static readonly string[] CategoryOfPrefixes = { "Keys and help", "Mod settings", "Achievements", "Sound cues", "Screens and menus", "Cards and equipment", "Game board" };
 
         /// <summary>The heading a text belongs under in the language files.</summary>
         public static string Category(string key)

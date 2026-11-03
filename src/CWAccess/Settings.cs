@@ -84,6 +84,9 @@ namespace CWAccess
         public static readonly Setting<bool> SpeakRoles = new Setting<bool>("SpeakRoles", true,
             "Say the kind of control after its name (button, slider...).");
 
+        public static readonly Setting<bool> AnnouncePosition = new Setting<bool>("AnnouncePosition", true,
+            "Say where the item is in the list of the screen (for example New Game, button, 1 of 10).");
+
         public static readonly Setting<bool> AnnounceActions = new Setting<bool>("AnnounceActions", true,
             "Say the available choices (Shoot, Hand-to-hand, Escape...) whenever they change.");
 

@@ -70,6 +70,8 @@ namespace CWAccess.Screens
             {
                 if (i == null || i.Key == null) continue;
                 i.Group = IsCard(i) ? "cards" : i.Key.StartsWith("tab") ? "tabs" : i.Key == "info" ? "info" : "buttons";
+                // A card says "2 of 7" itself (its place among the cards of its kind).
+                i.OwnPosition = IsCard(i);
             }
             return items;
         }

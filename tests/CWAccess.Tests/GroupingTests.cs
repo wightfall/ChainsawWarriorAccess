@@ -139,6 +139,9 @@ namespace CWAccess.Tests
         [InlineData("card_pick", "Cards and equipment")]
         [InlineData("stat_wounds", "Game board")]
         [InlineData("mod_loaded", "General speech")]
+        [InlineData("achname_ACHIEVEMENT_FISTO", "Achievements")]
+        [InlineData("ach_unlocked", "Achievements")]
+        [InlineData("set_position", "Mod settings")]
         public void ModTextsGoUnderTheirHeading(string key, string category)
         {
             Assert.Equal(category, Loc.Category(key));

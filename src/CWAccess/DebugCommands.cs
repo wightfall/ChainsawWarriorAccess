@@ -179,6 +179,14 @@ namespace CWAccess
                         Log.Info("achievement " + a.ID + " = " + G.Text(a.Name) + (had ? " (unlocked)" : string.Empty) + ": " + Patches.Achievements.Unlocked(a.ID));
                     }
                     break;
+                case "steamachievements":
+                    // Read only: Steam's own list (id, name, description in Steam's language).
+                    for (uint i = 0; i < Steamworks.SteamUserStats.GetNumAchievements(); i++)
+                    {
+                        string sid = Steamworks.SteamUserStats.GetAchievementName(i);
+                        Log.Info("steam " + sid + " | " + Steamworks.SteamUserStats.GetAchievementDisplayAttribute(sid, "name") + " | " + Steamworks.SteamUserStats.GetAchievementDisplayAttribute(sid, "desc"));
+                    }
+                    break;
                 case "achievementprogress":
                     {
                         // Shows Steam's progress pop-up for an achievement (changes nothing): Steam then reports it,

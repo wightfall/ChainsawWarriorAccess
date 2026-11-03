@@ -42,7 +42,7 @@ namespace CWAccess.Nav
             if (context == null) return;
             var parts = new List<string> { context.Title(), context.Intro() };
             NavItem f = Focused;
-            if (f != null && context.AnnounceFocusOnEnter) parts.Add(f.Speak());
+            if (f != null && context.AnnounceFocusOnEnter) parts.Add(Spoken(f));
             Speaker.Output(TextUtil.Join(parts), interrupt);
         }
 
@@ -134,7 +134,13 @@ namespace CWAccess.Nav
                 Speaker.Say(Loc.Get("nothing_here"));
                 return;
             }
-            Speaker.Say(f.Speak());
+            Speaker.Say(Spoken(f));
+        }
+
+        /// <summary>The item's text with its place in the list of the screen ("1 of 10") when that setting is on.</summary>
+        private static string Spoken(NavItem f)
+        {
+            return Position.Add(f.Speak(), items.IndexOf(f), items.Count, f.OwnPosition, Settings.AnnouncePosition.Value);
         }
 
         public static void Move(int delta)
@@ -149,7 +155,7 @@ namespace CWAccess.Nav
             {
                 // Stay at the edge and say the item again so the user knows where they are.
                 Audio.CuePlayer.Play(Audio.Cue.Edge);
-                Speaker.Say(Loc.Get(next < 0 ? "edge_top" : "edge_bottom") + " " + Focused.Speak());
+                Speaker.Say(Loc.Get(next < 0 ? "edge_top" : "edge_bottom") + " " + Spoken(Focused));
                 return;
             }
             index = next;
@@ -179,7 +185,7 @@ namespace CWAccess.Nav
             if (next < 0)
             {
                 Audio.CuePlayer.Play(Audio.Cue.Edge);
-                Speaker.Say(Loc.Get(dir < 0 ? "edge_top" : "edge_bottom") + " " + Focused.Speak());
+                Speaker.Say(Loc.Get(dir < 0 ? "edge_top" : "edge_bottom") + " " + Spoken(Focused));
                 return;
             }
             index = next;
