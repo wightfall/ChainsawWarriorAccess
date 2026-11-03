@@ -16,6 +16,26 @@ namespace CWAccess.Tests
         }
 
         [Fact]
+        public void EachAchievementIsSaidOnceAlthoughTheGameAndSteamBothReportIt()
+        {
+            string id = "ACHIEVEMENT_TEST_" + System.Guid.NewGuid().ToString("N");
+            Assert.True(Achievements.FirstTime(id));
+            Assert.False(Achievements.FirstTime(id));
+            Assert.False(Achievements.FirstTime(id.ToLowerInvariant()));
+            Assert.False(Achievements.FirstTime(null));
+            Assert.False(Achievements.FirstTime(string.Empty));
+        }
+
+        [Theory]
+        [InlineData(0u, 0u, true)]
+        [InlineData(10u, 50u, false)]
+        [InlineData(50u, 50u, false)]
+        public void OnlySteamReportsWithoutProgressAreUnlocks(uint current, uint max, bool unlock)
+        {
+            Assert.Equal(unlock, Achievements.IsUnlock(current, max));
+        }
+
+        [Fact]
         public void TheAnnouncementHasTitleAndDescription()
         {
             Loc.Use("en");

@@ -3,13 +3,13 @@ using AurochDigital;
 using CWAccess.Game;
 using CWAccess.Speech;
 using HarmonyLib;
+using Steamworks;
 
 namespace CWAccess.Patches
 {
     /// <summary>
-    /// An achievement the game unlocks during play (winning, Fisticuffs, Chain of Skulls...) is said with its title and
+    /// An achievement the game unlocks during play (winning, Fisto, Chain of Skulls...) is said at once with its name and
     /// description; sighted players see it in Steam's pop-up. Only achievements that were not unlocked before count.
-    /// Achievements Steam unlocks by itself from statistics (kill counts, endings seen) never pass through the game.
     /// </summary>
     [HarmonyPatch(typeof(StatsAndAchievementsSteam), nameof(StatsAndAchievementsSteam.SetAchievement))]
     internal static class AchievementPatch
@@ -17,6 +17,8 @@ namespace CWAccess.Patches
         private static void Prefix(StatsAndAchievements __instance, string achievement, out bool __state)
         {
             __state = Had(__instance, achievement);
+            // Already unlocked: Steam's report of storing it again must not be announced either.
+            if (__state) Achievements.FirstTime(achievement);
         }
 
         private static void Postfix(StatsAndAchievements __instance, string achievement, bool __state)
@@ -24,8 +26,7 @@ namespace CWAccess.Patches
             try
             {
                 if (__state || !Had(__instance, achievement)) return;
-                Log.Info("Achievement unlocked: " + achievement);
-                Speaker.Queue(Achievements.Unlocked(achievement));
+                Achievements.Announce(achievement, "game");
             }
             catch (Exception e)
             {
@@ -46,8 +47,53 @@ namespace CWAccess.Patches
         }
     }
 
+    /// <summary>
+    /// Steam reports every achievement it stores; with no progress numbers that means it has just been unlocked. This
+    /// catches the achievements Steam unlocks by itself from statistics (kill counts, damage taken, endings seen), which
+    /// never pass through the game: they are said as soon as Steam has stored them.
+    /// </summary>
+    [HarmonyPatch(typeof(StatsAndAchievementsSteam), "UserAchievementStored")]
+    internal static class AchievementStoredPatch
+    {
+        private static void Postfix(UserAchievementStored_t callbackResult)
+        {
+            try
+            {
+                if (callbackResult.m_nGameID != SteamUtils.GetAppID().m_AppId) return;
+                if (!Achievements.IsUnlock(callbackResult.m_nCurProgress, callbackResult.m_nMaxProgress)) return;
+                Achievements.Announce(callbackResult.m_rgchAchievementName, "Steam");
+            }
+            catch (Exception e)
+            {
+                Log.Error("AchievementStoredPatch: " + e);
+            }
+        }
+    }
+
     internal static class Achievements
     {
+        // Achievements already said (or already unlocked when the game set them again) in this session.
+        private static readonly System.Collections.Generic.HashSet<string> said = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>True the first time an achievement comes up in this session (the game and Steam both report it).</summary>
+        public static bool FirstTime(string id)
+        {
+            return !string.IsNullOrEmpty(id) && said.Add(id);
+        }
+
+        /// <summary>Steam's report means "unlocked" when it has no progress numbers; with numbers it is only progress.</summary>
+        public static bool IsUnlock(uint current, uint max)
+        {
+            return current == 0 && max == 0;
+        }
+
+        public static void Announce(string id, string source)
+        {
+            if (!FirstTime(id)) return;
+            Log.Info("Achievement unlocked (" + source + "): " + id);
+            Speaker.Queue(Unlocked(id));
+        }
+
         /// <summary>
         /// "Achievement unlocked: title. description": the name and description Steam shows in its pop-up, else the
         /// game's own list (most of its entries have no title), else a readable form of the id.

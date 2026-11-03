@@ -104,9 +104,9 @@ mod and the sound cues (Up/Down to go through it, Enter on a cue plays it, Escap
 - Equipment gained or lost (also a second copy of a card you already have), uses left and spare clips.
 - The time left every 10 minutes of game time, and nightfall.
 - The tutorial boxes, screen titles, questions and the end of game result.
-- Achievements the game unlocks while you play (winning on a difficulty, Fisto, Chain of Skulls...), with the name and
-  description Steam shows in its pop-up. Achievements Steam unlocks by itself from statistics (kill counts, endings
-  seen) never pass through the game, so they are not announced; the Achievements screen lists them.
+- Every achievement as soon as it is unlocked, with the name and description Steam shows in its pop-up: those the game
+  unlocks (winning on a difficulty, Fisto, Chain of Skulls...) at once, and those Steam unlocks from statistics (kill
+  counts, damage taken, endings seen) as soon as Steam has stored them. Each is said once.
 - **The intro comic:** its five scenes are pictures with speech bubbles. The mod describes each scene, with all of
   its captions and dialogue, when it starts; the first item of the comic screen repeats the description.
 
