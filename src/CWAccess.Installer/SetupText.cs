@@ -39,7 +39,15 @@ namespace CWAccess.Installer
 
         public static string F(string key, string english, params object[] args)
         {
-            return string.Format(T(key, english), args);
+            try
+            {
+                return string.Format(T(key, english), args);
+            }
+            catch (FormatException)
+            {
+                // A translation with a stray brace: the English line instead.
+                return string.Format(english, args);
+            }
         }
 
         /// <summary>Picks the first language: the mod's setting, else Windows, when a file exists for it.</summary>

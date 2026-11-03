@@ -8,7 +8,7 @@ namespace CWAccess
     /// <summary>Started by CWAccess.Boot when the game opens its first screen.</summary>
     public static class Entry
     {
-        public const string Version = "0.3.6";
+        public const string Version = "0.3.7";
 
         internal static string ModDir;
         private static bool initialised;

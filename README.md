@@ -179,10 +179,16 @@ Two kinds of files, both plain text (`key = text`, `\n` for a line break, `#` fo
 Every language file is divided into groups, each starting with a line `##### Group name`, so you can search for
 `#####` (or for the group) to jump to the texts you want:
 
-- the mod: General speech, Screens and menus, Keys and help, Game board, Cards and equipment, Mod settings,
-  Sound cues, and The setup program;
+- the mod: General speech, Screens and menus, Keys and help, Game board, Cards and equipment, Achievements,
+  Mod settings, Sound cues, and The setup program;
 - the game: Menus and screens, Character creation, Messages, Enemies, Traps, Rooms, Equipment, End of game and
   achievements, Other texts, and Screen texts.
+
+**A translation does not have to be complete.** Every line that is missing or left empty is said in English, and so
+is every line that would come out wrong: a `{0}` that differs from the English, a stray `{`, or a `%word` of the game
+left out (the enemy's name would be lost). `CWAccess\CWAccess.log` lists the lines that were skipped. A new language
+costs no more than English while you play: it loads in a fraction of a second, and texts already translated are
+remembered, since the screens are read again several times a second.
 
 A personal `CWAccess\strings.txt` in the mod's format replaces single texts of any language and is kept by updates
 (the shipped language files are replaced by updates).
@@ -241,7 +247,8 @@ Projects:
   the game's fields, equipment gained and lost counted per kind of card, the groups of every language file, letters
   that find items by their English name on screen, an
   explanation for every kind of choice the game has, the names and descriptions of all 23 achievements, the
-  position in lists, the installer (a real install, update
+  position in lists, a partly translated future language (every missing or broken line in English) and how fast a
+  language loads and is spoken, the installer (a real install, update
   and uninstall on a copy of the game's DLL, the setup replacing itself while it runs from the game folder, and its read-only events and What's new boxes), and
   checks that every part of the game the mod reaches by name still exists. `CWACCESS_UPDATE_LANGUAGES=1` rewrites
   `Languages\template.txt` after adding texts and puts every language file back into its groups.

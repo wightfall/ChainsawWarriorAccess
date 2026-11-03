@@ -691,6 +691,18 @@ namespace CWAccess
             }
             catch (FormatException)
             {
+                // A translation with a stray brace: the English text, filled in, instead.
+                if (texts.TryGetValue(key, out string english) && english != s)
+                {
+                    try
+                    {
+                        return string.Format(english, args);
+                    }
+                    catch (FormatException)
+                    {
+                        // Fall through.
+                    }
+                }
                 return s;
             }
         }

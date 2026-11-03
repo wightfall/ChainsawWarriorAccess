@@ -100,7 +100,18 @@ namespace CWAccess.Game
         /// <summary>The translation of a game text key, or the English text given.</summary>
         public static string ForKey(string key, string english)
         {
+            BuildPatterns();
             return key != null && byKey.TryGetValue(key, out string t) ? t : english;
+        }
+
+        /// <summary>True when the translation has the same %words as the English (the game fills them in).</summary>
+        public static bool SameWords(string english, string translation)
+        {
+            var a = new HashSet<string>();
+            foreach (Match m in Token.Matches(english ?? string.Empty)) a.Add(m.Groups[1].Value);
+            var b = new HashSet<string>();
+            foreach (Match m in Token.Matches(translation ?? string.Empty)) b.Add(m.Groups[1].Value);
+            return a.SetEquals(b);
         }
 
         /// <summary>Translates a text as shown on screen (whole text or a known pattern); unchanged when unknown.</summary>
@@ -146,11 +157,18 @@ namespace CWAccess.Game
             Dictionary<string, string> table = Table;
             if (table == null) return;
             patterns = new List<Pattern>();
-            foreach (KeyValuePair<string, string> kv in byKey)
+            foreach (KeyValuePair<string, string> kv in new List<KeyValuePair<string, string>>(byKey))
             {
                 if (!table.TryGetValue(kv.Key, out string english)) continue;
                 english = TextUtil.CleanRaw(english);
                 if (english.Length == 0) continue;
+                if (!SameWords(english, kv.Value))
+                {
+                    // A filled-in part would be lost (an enemy's name...): the English line is said instead.
+                    byKey.Remove(kv.Key);
+                    Log.Warn("Game text translation ignored, its %words differ from English: " + kv.Key);
+                    continue;
+                }
                 if (english.IndexOf('%') < 0)
                 {
                     if (!byText.ContainsKey(english)) byText[english] = kv.Value;
